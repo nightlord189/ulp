@@ -1,0 +1,12 @@
+{
+  "HttpPort": 8080,
+  "GinMode": "debug",
+  "Db": {
+    "Host": "db",
+    "Port": 5432,
+    "Name": "ulp",
+    "User": "postgres",
+    "Password": "-dbpassword-",
+    "Migrate": true
+  }
+}
