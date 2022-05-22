@@ -1,5 +1,5 @@
 start:
-	go run cmd/main.go
+	go run main.go
 
 lint:
 	golangci-lint run --timeout=5m

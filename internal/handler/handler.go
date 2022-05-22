@@ -7,6 +7,8 @@ import (
 	"github.com/nightlord189/ulp/internal/service"
 	"html/template"
 	"io"
+	"net/http"
+	"time"
 )
 
 // Handler - структура со ссылками на зависимости
@@ -38,11 +40,19 @@ func (h *Handler) Render(w io.Writer, name string, data interface{}, c echo.Cont
 	return h.templates.ExecuteTemplate(w, name, data)
 }
 
-func (h *Handler) GetBool(c echo.Context, key string) bool {
+func getBool(c echo.Context, key string) bool {
 	var value bool
 	valueCommon := c.Get(key)
 	if valueCommon != nil {
 		value = valueCommon.(bool)
 	}
 	return value
+}
+
+func removeCookie(c echo.Context, name string) {
+	cookie := new(http.Cookie)
+	cookie.Name = name
+	cookie.Value = ""
+	cookie.Expires = time.Now()
+	c.SetCookie(cookie)
 }

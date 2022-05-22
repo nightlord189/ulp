@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link href="../static/main.css" rel="stylesheet">
 
-    <title>Задания</title>
+    <title>Ошибка</title>
 </head>
 <body>
 
@@ -21,50 +21,26 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Задания</a>
-                </li>
-            </ul>
-        </div>
-        <div class="nav-item">
-            <a class="nav-link" href="/logout">Выйти</a>
         </div>
     </nav>
 
     <div class="row">
-        <div class="col">
-            <h1>Мои задания</h1>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Название</th>
-                        <th scope="col">Тип</th>
-                        <th scope="col">Дата создания</th>
-                        <th scope="col">Действия</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <th scope="row">1</th>
-                        <td>Вывод тега h1</td>
-                        <td>HTML</td>
-                        <td>21.05.2021 15:17:03</td>
-                        <td>
-                            <a href="/task/{id}/attempt">Ссылка для студентов</a>
-                            <br>
-                            <a href="/task/{id}/edit">Редактировать</a>
-                            <br>
-                            <a href="/task/{id}/delete">Удалить</a>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+        <div class="col-sm">
+        </div>
+        <div class="col-6">
+            {{if .IsError}}
+            <h1>Ошибка</h1>
+            <div class="alert alert-danger" role="alert">
+                {{.Message}}
             </div>
-
-
+            {{else}}
+            <h1>Успешно</h1>
+            <div class="alert alert-success" role="alert">
+                {{.Message}}
+            </div>
+            {{end}}
+        </div>
+        <div class="col-sm">
         </div>
     </div>
 

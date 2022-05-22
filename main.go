@@ -34,7 +34,9 @@ func main() {
 
 	e.GET("/", hlr.Index, hlr.CheckCookieJwtMiddleware)
 	e.GET("/auth", hlr.GetAuth, hlr.CheckCookieJwtMiddleware)
+	e.GET("/reg", hlr.GetReg, hlr.CheckCookieJwtMiddleware)
 	e.POST("/auth", hlr.PostAuth)
+	e.POST("/reg", hlr.PostReg)
 
 	err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort))
 	if err != nil {

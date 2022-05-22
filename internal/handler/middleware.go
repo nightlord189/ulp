@@ -15,19 +15,19 @@ func (h *Handler) CheckCookieJwtMiddleware(next echo.HandlerFunc) echo.HandlerFu
 			fmt.Println("no cookie")
 			return next(c)
 		}
-		_, err = service.ValidateJwtToken(authCookie.Value, h.Config.Auth.Secret)
+		claims, err := service.ValidateJwtToken(authCookie.Value, h.Config.Auth.Secret)
 		if err != nil {
 			// remove cookie
-			/*c.Set("authorized", false)
-			cookie := new(http.Cookie)
-			cookie.Name = "auth"
-			cookie.Value = ""
-			cookie.Expires = time.Now()
-			c.SetCookie(cookie)*/
+			c.Set("authorized", false)
+			removeCookie(c, "auth")
 			fmt.Println("invalid token middleware", err, authCookie.Value)
 			return next(c)
 		}
 		c.Set("authorized", true)
+		// проставляем нужные данные для дальнейшего использования в обработчиках
+		c.Set("user_id", claims["user_id"])
+		c.Set("username", claims["username"])
+		c.Set("role", claims["role"])
 		return next(c)
 	}
 }

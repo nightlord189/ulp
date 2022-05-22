@@ -37,11 +37,25 @@ func (s *Service) Auth(req model.AuthRequest) (string, error) {
 	if GetHash(req.Password) != user.PasswordHash {
 		return "", errors.New("invalid username or password")
 	}
-	payload := CreatePayload(user.ID, user.Username, user.Type,
+	payload := CreatePayload(user.ID, user.Username, string(user.Role),
 		time.Now().Add(time.Second*time.Duration(s.Config.Auth.ExpTime)).Unix(), s.Config.Auth.Issuer)
 	token, err := CreateToken(payload, s.Config.Auth.Secret)
 	if err != nil {
 		return "", fmt.Errorf("err on create token: %w", err)
 	}
 	return token, nil
+}
+
+func (s *Service) Reg(req model.RegRequest) error {
+	user := model.UserDB{
+		Username:     req.Username,
+		Email:        req.Email,
+		Role:         model.Role(req.Role),
+		PasswordHash: GetHash(req.Password),
+	}
+	err := s.DB.CreateEntity(&user)
+	if err != nil {
+		return fmt.Errorf("err create user: %w", err)
+	}
+	return nil
 }

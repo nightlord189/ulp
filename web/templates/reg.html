@@ -15,7 +15,7 @@
 
 <div class="container">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Universal Learning Platform</a>
+        <a class="navbar-brand" href="/">Universal Learning Platform</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -29,25 +29,25 @@
         </div>
         <div class="col-6">
             <h1>Регистрация</h1>
-            <form>
+            <form action="/reg" method="post">
                 <div class="form-group">
                     <label for="username">Логин</label>
-                    <input type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Введите желаемый логин">
+                    <input type="text" class="form-control" name="username" id="username" aria-describedby="emailHelp" placeholder="Введите желаемый логин">
                     <small id="usernameHelp" class="form-text text-muted">Например, tutor0801</small>
                 </div>
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Введите ваш email">
+                    <input type="email" class="form-control" name="email" id="email" required aria-describedby="emailHelp" placeholder="Введите ваш email">
                     <small id="emailHelp" class="form-text text-muted">Мы будем использовать его для восстановления доступа</small>
                 </div>
                 <div class="form-group">
                     <label for="password">Пароль</label>
-                    <input type="password" class="form-control" id="password" placeholder="Введите пароль">
-                    <small id="passwordHelp" class="form-text text-muted">Не короче 8 символов</small>
+                    <input type="password" class="form-control" name="password" id="password" placeholder="Введите пароль">
+                    <small id="passwordHelp" class="form-text text-muted">Не короче 6 символов</small>
                 </div>
                 <div class="form-group">
-                    <label for="accountType">Тип аккаунта</label>
-                    <select class="form-control" id="accountType">
+                    <label for="role">Роль</label>
+                    <select class="form-control" name="role" id="role">
                         <option value="student" selected>Студент</option>
                         <option value="tutor" >Преподаватель</option>
                     </select>
