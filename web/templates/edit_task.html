@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="../static/main.css" rel="stylesheet">
+
+    <title>Редактировать задание</title>
+</head>
+<body>
+
+<div class="container">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Universal Learning Platform</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Задания</a>
+                </li>
+            </ul>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link" href="/logout">Выйти</a>
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class="col-sm">
+        </div>
+        <div class="col-6">
+            <h1>Редактировать задание</h1>
+            <form>
+                <div class="form-group">
+                    <label for="name">Название</label>
+                    <input type="text" class="form-control" id="name" aria-describedby="emailHelp" placeholder="Введите название задания">
+                    <small id="usernameHelp" class="form-text text-muted">Например, "Проверка наличия тега h1"</small>
+                </div>
+                <div class="form-group">
+                    <label for="taskType">Тип задания</label>
+                    <select class="form-control" id="taskType">
+                        <option value="console" selected>Консольное приложение</option>
+                        <option value="web_api" >Web-API</option>
+                        <option value="html">HTML</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Описание</label>
+                    <textarea class="form-control" id="description"  placeholder="Введите описание задания" rows="4"></textarea>
+                    <small id="descriptionHelp" class="form-text text-muted">Например, здесь можно описать инструкции для студентов</small>
+                </div>
+                <p><b>Тесткейс #1</b></p>
+                <div class="form-group">
+                    <label for="testCaseType">Тип тесткейса</label>
+                    <select class="form-control" id="testCaseType">
+                        <option value="contains" selected>Содержит</option>
+                        <option value="equal" >Равно</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="testCaseUrl">URL</label>
+                    <input type="text" disabled class="form-control" id="testCaseUrl" aria-describedby="emailHelp" placeholder="Введите URL вызываемого метода API (GET-запрос)">
+                    <small id="testCaseUrlHelp" class="form-text text-muted">Например, "/user/add"</small>
+                </div>
+                <div class="form-group">
+                    <label for="testCaseExpected">Ожидаемое значение</label>
+                    <input type="text" class="form-control" id="testCaseExpected" aria-describedby="emailHelp" placeholder="Введите ожидаемое значение">
+                    <small id="testCaseExpectedHelp" class="form-text text-muted">Например, "hello, world"</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </form>
+        </div>
+        <div class="col-sm">
+        </div>
+    </div>
+
+    <footer class="w-100 py-4 flex-shrink-0">
+        <span class="text-muted footer-text">Demo by Alexey Buravov for the master's thesis in <a href="https://iitu.edu.kz">IITU</a></span>
+    </footer>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
