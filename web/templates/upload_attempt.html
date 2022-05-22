@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link href="../static/main.css" rel="stylesheet">
 
-    <title>Решение #3213213</title>
+    <title>Загрузить решение</title>
 </head>
 <body>
 
@@ -33,14 +33,14 @@
         <div class="col-sm">
         </div>
         <div class="col-6">
-            <h1>Решение #3213213</h1><br>
+            <h1>Загрузить решение</h1>
 
             <div class="row">
                 <div class="col-6">
                     <h6>Наименование задания</h6>
                 </div>
                 <div class="col-6">
-                   <a href="#">Проверка тега HTML</a>
+                    Проверка тега HTML
                 </div>
             </div>
             <div class="row">
@@ -59,30 +59,16 @@
                     Go API-server
                 </div>
             </div>
-            <div class="row">
-                <div class="col-6">
-                    <h6>Дата сдачи</h6>
+
+            <br>
+            <form>
+                <div class="form-group">
+                    <label for="source"><h6>Исходный код</h6></label><br>
+                    <input name="source" id="source" type="file" placeholder="Загрузить исходный код решения">
+                    <small id="sourceHelp" class="form-text text-muted">Поддерживаемые расширения: .go, .js, .zip</small>
                 </div>
-                <div class="col-6">
-                    21.05.2021 15:17:03
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6">
-                    <h6>Логин студента</h6>
-                </div>
-                <div class="col-6">
-                    student12736613
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6">
-                    <h6>Результат</h6>
-                </div>
-                <div class="col-6">
-                    Успех
-                </div>
-            </div>
+                <button type="submit" class="btn btn-primary">Отправить на проверку</button>
+            </form>
         </div>
         <div class="col-sm">
         </div>
