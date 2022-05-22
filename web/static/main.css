@@ -1,0 +1,14 @@
+
+body {
+    margin-bottom: 60px; /* Margin bottom by footer height */
+}
+
+footer {
+    background: #eff2f5;
+    color:red;
+    margin-top:50px;
+}
+
+.footer-text {
+    margin-left: 10px;
+}

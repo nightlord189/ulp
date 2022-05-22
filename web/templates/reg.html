@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="../static/main.css" rel="stylesheet">
+
+    <title>Регистрация</title>
+</head>
+<body>
+
+<div class="container">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Universal Learning Platform</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class="col-sm">
+        </div>
+        <div class="col-6">
+            <h1>Регистрация</h1>
+            <form>
+                <div class="form-group">
+                    <label for="username">Логин</label>
+                    <input type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Введите желаемый логин">
+                    <small id="usernameHelp" class="form-text text-muted">Например, tutor0801</small>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Введите ваш email">
+                    <small id="emailHelp" class="form-text text-muted">Мы будем использовать его для восстановления доступа</small>
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" class="form-control" id="password" placeholder="Введите пароль">
+                    <small id="passwordHelp" class="form-text text-muted">Не короче 8 символов</small>
+                </div>
+                <div class="form-group">
+                    <label for="accountType">Тип аккаунта</label>
+                    <select class="form-control" id="accountType">
+                        <option value="student" selected>Студент</option>
+                        <option value="tutor" >Преподаватель</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+            <br>
+            <span>Уже есть аккаунт? <a href="/auth">Войти</a></span>
+        </div>
+        <div class="col-sm">
+        </div>
+    </div>
+
+    <footer class="w-100 py-4 flex-shrink-0">
+        <span class="text-muted footer-text">Demo by Alexey Buravov for the master's thesis in <a href="https://iitu.edu.kz">IITU</a></span>
+    </footer>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
