@@ -1,12 +1,18 @@
 {
   "HttpPort": 8080,
-  "GinMode": "debug",
+  "HttpDebug": true,
+  "TemplatesPath": "web/templates/*.html",
   "Db": {
-    "Host": "db",
+    "Host": "localhost",
     "Port": 5432,
     "Name": "ulp",
     "User": "postgres",
-    "Password": "-dbpassword-",
+    "Password": "snami",
     "Migrate": true
+  },
+  "Auth": {
+    "Secret": "mWttEjdFThHtrAvRpt4P",
+    "Issuer": "ULP",
+    "ExpTime": 604800
   }
 }

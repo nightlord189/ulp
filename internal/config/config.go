@@ -7,15 +7,21 @@ import (
 
 //Config - конфиг
 type Config struct {
-	HttpPort int
-	GinMode  string //debug или release
-	DB       struct {
+	HttpPort      int
+	HttpDebug     bool
+	TemplatesPath string
+	DB            struct {
 		Host     string
 		Port     int
 		Name     string
 		User     string
 		Password string
 		Migrate  bool
+	}
+	Auth struct {
+		Secret  string
+		Issuer  string
+		ExpTime int
 	}
 }
 
