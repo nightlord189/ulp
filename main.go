@@ -32,9 +32,12 @@ func main() {
 		return c.String(http.StatusOK, "healthz")
 	})
 
-	e.GET("/", hlr.Index, hlr.CheckCookieJwtMiddleware)
+	e.GET("/", hlr.Index, hlr.CheckCookieJwtMiddleware, hlr.RedirectUnauthorizedMiddleware)
+	e.GET("/logout", hlr.Logout)
 	e.GET("/auth", hlr.GetAuth, hlr.CheckCookieJwtMiddleware)
 	e.GET("/reg", hlr.GetReg, hlr.CheckCookieJwtMiddleware)
+	e.GET("/tasks", hlr.GetTasks, hlr.CheckCookieJwtMiddleware, hlr.RedirectUnauthorizedMiddleware)
+
 	e.POST("/auth", hlr.PostAuth)
 	e.POST("/reg", hlr.PostReg)
 

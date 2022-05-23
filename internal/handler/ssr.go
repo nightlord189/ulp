@@ -9,18 +9,33 @@ import (
 )
 
 func (h *Handler) Index(c echo.Context) error {
-	authorized := getBool(c, "authorized")
-	if authorized {
-		username := c.Get("username")
-		return c.String(http.StatusOK, "authorized4 "+fmt.Sprintf("%v", username))
+	role := model.Role(c.Get("role").(string))
+	switch role {
+	case model.RoleStudent:
+		return c.Redirect(302, "/attempts")
+	case model.RoleTutor:
+		return c.Redirect(302, "/tasks")
 	}
-	return c.Redirect(302, "/auth")
+	return c.Render(http.StatusBadRequest, "message.html", model.NewTmplMessage("Ошибка определения роли", true))
+}
+
+func (h *Handler) GetTasks(c echo.Context) error {
+	role := model.Role(c.Get("role").(string))
+	if role != model.RoleTutor {
+		return c.Redirect(302, "/")
+	}
+	return c.Render(http.StatusOK, "tasks.html", "")
+}
+
+func (h *Handler) Logout(c echo.Context) error {
+	removeCookie(c, "auth")
+	return c.Redirect(302, "/")
 }
 
 func (h *Handler) GetAuth(c echo.Context) error {
 	authorized := getBool(c, "authorized")
 	if !authorized {
-		return c.Render(http.StatusOK, "auth.html", "World")
+		return c.Render(http.StatusOK, "auth.html", "")
 	}
 	return c.Redirect(302, "/")
 }
@@ -28,7 +43,7 @@ func (h *Handler) GetAuth(c echo.Context) error {
 func (h *Handler) GetReg(c echo.Context) error {
 	authorized := getBool(c, "authorized")
 	if !authorized {
-		return c.Render(http.StatusOK, "reg.html", "World")
+		return c.Render(http.StatusOK, "reg.html", "")
 	}
 	return c.Redirect(302, "/")
 }

@@ -31,3 +31,14 @@ func (h *Handler) CheckCookieJwtMiddleware(next echo.HandlerFunc) echo.HandlerFu
 		return next(c)
 	}
 }
+
+func (h *Handler) RedirectUnauthorizedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		fmt.Println("middleware2")
+		authorized := getBool(c, "authorized")
+		if !authorized {
+			return c.Redirect(302, "/auth")
+		}
+		return next(c)
+	}
+}
