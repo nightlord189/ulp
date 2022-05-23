@@ -24,7 +24,25 @@ func (h *Handler) GetTasks(c echo.Context) error {
 	if role != model.RoleTutor {
 		return c.Redirect(302, "/")
 	}
-	return c.Render(http.StatusOK, "tasks.html", "")
+	userID := fmt.Sprintf("%v", c.Get("user_id"))
+	resp, err := h.Service.GetTasks(userID)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, "message.html", model.NewTmplMessage("Ошибка загрузки заданий: "+err.Error(), true))
+	}
+	return c.Render(http.StatusOK, "tasks.html", resp)
+}
+
+func (h *Handler) GetAttempts(c echo.Context) error {
+	role := model.Role(c.Get("role").(string))
+	if role != model.RoleStudent {
+		return c.Redirect(302, "/")
+	}
+	userID := fmt.Sprintf("%v", c.Get("user_id"))
+	resp, err := h.Service.GetAttempts(userID)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, "message.html", model.NewTmplMessage("Ошибка загрузки решений: "+err.Error(), true))
+	}
+	return c.Render(http.StatusOK, "attempts.html", resp)
 }
 
 func (h *Handler) Logout(c echo.Context) error {

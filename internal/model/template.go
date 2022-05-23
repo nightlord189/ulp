@@ -11,3 +11,11 @@ func NewTmplMessage(message string, isError bool) TemplateMessage {
 		IsError: isError,
 	}
 }
+
+type TemplateTasks struct {
+	Tasks []TaskView
+}
+
+type TemplateAttempts struct {
+	Attempts []AttemptView
+}

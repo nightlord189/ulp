@@ -8,7 +8,8 @@
     "Name": "ulp",
     "User": "postgres",
     "Password": "snami",
-    "Migrate": true
+    "Migrate": true,
+    "Log": true
   },
   "Auth": {
     "Secret": "mWttEjdFThHtrAvRpt4P",

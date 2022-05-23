@@ -47,19 +47,21 @@
                     </tr>
                     </thead>
                     <tbody>
+                    {{range .Tasks}}
                     <tr>
-                        <th scope="row">1</th>
-                        <td>Вывод тега h1</td>
-                        <td>HTML</td>
-                        <td>21.05.2021 15:17:03</td>
+                        <th scope="row">{{.Order}}</th>
+                        <td>{{.Name}}</td>
+                        <td>{{.Type}}</td>
+                        <td>{{.CreatedAt}}</td>
                         <td>
-                            <a href="/task/{id}/attempt">Ссылка для студентов</a>
+                            <a href="/task/{{.ID}}/attempt">Ссылка для студентов</a>
                             <br>
-                            <a href="/task/{id}/edit">Редактировать</a>
+                            <a href="/task/{{.ID}}/edit">Редактировать</a>
                             <br>
-                            <a href="/task/{id}/delete">Удалить</a>
+                            <a href="/task/{{.ID}}/delete">Удалить</a>
                         </td>
                     </tr>
+                    {{end}}
                     </tbody>
                 </table>
             </div>

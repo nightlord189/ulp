@@ -48,16 +48,18 @@
                     </tr>
                     </thead>
                     <tbody>
+                    {{range .Attempts}}
                     <tr>
-                        <th scope="row">1</th>
-                        <td>Вывод тега h1</td>
-                        <td><a href="/task/{task_id}/attempt">Ссылка</a></td>
-                        <td>21.05.2021 15:17:03</td>
-                        <td>Успех</td>
+                        <th scope="row">{{.Order}}</th>
+                        <td>{{.TaskName}}</td>
+                        <td><a href="/task/{{.TaskID}}/attempt">Ссылка</a></td>
+                        <td>{{.CreatedAtFormat}}</td>
+                        <td>{{.State}}</td>
                         <td>
-                            <a href="/attempt/{id}">Ссылка</a>
+                            <a href="/attempt/{{.ID}}">Ссылка</a>
                         </td>
                     </tr>
+                    {{end}}
                     </tbody>
                 </table>
             </div>

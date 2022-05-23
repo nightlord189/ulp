@@ -59,3 +59,27 @@ func (s *Service) Reg(req model.RegRequest) error {
 	}
 	return nil
 }
+
+func (s *Service) GetTasks(userID string) (model.TemplateTasks, error) {
+	tasks := make([]model.TaskDB, 0)
+	err := s.DB.GetEntitiesByField("creator_id", userID, &tasks)
+	taskViews := make([]model.TaskView, len(tasks))
+	for i := range tasks {
+		taskViews[i] = tasks[i].ToView()
+		taskViews[i].Order = i + 1
+	}
+	return model.TemplateTasks{
+		Tasks: taskViews,
+	}, err
+}
+
+func (s *Service) GetAttempts(userID string) (model.TemplateAttempts, error) {
+	attempts, err := s.DB.GetAttemptsByStudentID(userID)
+	for i := range attempts {
+		attempts[i].Order = i + 1
+		attempts[i].CreatedAtFormat = attempts[i].CreatedAt.Format("2006-01-02 15:04:05")
+	}
+	return model.TemplateAttempts{
+		Attempts: attempts,
+	}, err
+}

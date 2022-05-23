@@ -8,7 +8,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	gormLogger "gorm.io/gorm/logger"
 )
 
 var ErrRecordNotFound = gorm.ErrRecordNotFound
@@ -32,8 +31,12 @@ func InitDb(cfg *config.Config) (*Manager, error) {
 // ConnectDb - возвращает инстанс gorm, подключенный к postgres
 func connectDb(cfg *config.Config) (*gorm.DB, error) {
 	address := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable password=%s", cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Name, cfg.DB.Password)
+	dbLogger := logger.Discard
+	if cfg.DB.Log {
+		dbLogger = logger.Default.LogMode(logger.Info)
+	}
 	db, err := gorm.Open(postgres.Open(address), &gorm.Config{
-		Logger: gormLogger.Default.LogMode(logger.Silent),
+		Logger: dbLogger,
 	})
 	if err != nil {
 		panic("Failed to connect database: " + err.Error())
@@ -51,9 +54,16 @@ func connectDb(cfg *config.Config) (*gorm.DB, error) {
 
 // AutoMigrate - применить миграции
 func autoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(
+	err := db.AutoMigrate(
 		model.TaskDB{},
 		model.UserDB{},
 		model.AttemptDB{},
 	)
+	if err != nil {
+		return err
+	}
+	db.Exec("ALTER TABLE tasks ADD CONSTRAINT tasks_fk FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE")
+	db.Exec("ALTER TABLE attempts ADD CONSTRAINT tasks_fk FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE SET NULL ON UPDATE CASCADE")
+	db.Exec("ALTER TABLE attempts ADD CONSTRAINT users_fk FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE")
+	return nil
 }

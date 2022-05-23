@@ -17,6 +17,7 @@ type Config struct {
 		User     string
 		Password string
 		Migrate  bool
+		Log      bool
 	}
 	Auth struct {
 		Secret  string
