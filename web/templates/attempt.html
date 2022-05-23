@@ -22,25 +22,39 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
+                {{if .IsAuthorized}}
+                    {{if eq .Role "student"}}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/attempts">Решения</a>
+                        </li>
+                    {{else if eq .Role "tutor"}}
+                       <li class="nav-item">
+                            <a class="nav-link" href="/tasks">Задания</a>
+                        </li>
+                    {{end}}
+                {{end}}
             </ul>
         </div>
+
+        {{if .IsAuthorized}}
         <div class="nav-item">
             <a class="nav-link" href="/logout">Выйти</a>
         </div>
+        {{end}}
     </nav>
 
     <div class="row">
         <div class="col-sm">
         </div>
         <div class="col-6">
-            <h1>Решение #3213213</h1><br>
+            <h1>Решение #{{.Attempt.ID}}</h1><br>
 
             <div class="row">
                 <div class="col-6">
                     <h6>Наименование задания</h6>
                 </div>
                 <div class="col-6">
-                   <a href="#">Проверка тега HTML</a>
+                   <a href="/task/{{.Attempt.TaskID}}/attempt">{{.Attempt.TaskName}}</a>
                 </div>
             </div>
             <div class="row">
@@ -48,7 +62,7 @@
                     <h6>Описание задания</h6>
                 </div>
                 <div class="col-6">
-                    Нужно написать веб-сервер, возвращающий HTML с тегом h1 Нужно написать веб-сервер, возвращающий HTML с тегом h1
+                    {{.Attempt.TaskDescription}}
                 </div>
             </div>
             <div class="row">
@@ -56,7 +70,7 @@
                     <h6>Тип задания</h6>
                 </div>
                 <div class="col-6">
-                    Go API-server
+                    {{.Attempt.TaskType}}
                 </div>
             </div>
             <div class="row">
@@ -64,7 +78,7 @@
                     <h6>Дата сдачи</h6>
                 </div>
                 <div class="col-6">
-                    21.05.2021 15:17:03
+                    {{.Attempt.CreatedAtFormat}}
                 </div>
             </div>
             <div class="row">
@@ -72,7 +86,7 @@
                     <h6>Логин студента</h6>
                 </div>
                 <div class="col-6">
-                    student12736613
+                    {{.Attempt.CreatorUsername}}
                 </div>
             </div>
             <div class="row">
@@ -80,7 +94,11 @@
                     <h6>Результат</h6>
                 </div>
                 <div class="col-6">
-                    Успех
+                    {{if eq .Attempt.State "success"}}
+                    <span class="badge badge-success">Успешно</span>
+                    {{else}}
+                    <span class="badge badge-danger">Неудача</span>
+                    {{end}}
                 </div>
             </div>
         </div>

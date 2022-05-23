@@ -83,3 +83,13 @@ func (s *Service) GetAttempts(userID string) (model.TemplateAttempts, error) {
 		Attempts: attempts,
 	}, err
 }
+
+func (s *Service) GetAttempt(attemptID string, isAuthorized bool, role string) (model.TemplateAttempt, error) {
+	attempt, err := s.DB.GetAttemptByID(attemptID)
+	attempt.CreatedAtFormat = attempt.CreatedAt.Format("2006-01-02 15:04:05")
+	return model.TemplateAttempt{
+		Attempt:      attempt,
+		IsAuthorized: isAuthorized,
+		Role:         role,
+	}, err
+}

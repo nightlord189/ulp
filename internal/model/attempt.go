@@ -27,10 +27,13 @@ type AttemptView struct {
 	Order           int       `gorm:"-"`
 	ID              int       `gorm:"column:id"`
 	TaskName        string    `gorm:"column:t_name"`
+	TaskDescription string    `gorm:"column:t_description"`
+	TaskType        string    `gorm:"column:t_type"`
 	TaskID          int       `gorm:"column:task_id"`
 	CreatedAt       time.Time `gorm:"column:created_at"`
 	CreatedAtFormat string    `gorm:"-"`
 	State           string    `gorm:"column:state"`
+	CreatorUsername string    `gorm:"column:u_username"`
 }
 
 type AttemptRequest struct {

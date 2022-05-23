@@ -42,3 +42,12 @@ func (h *Handler) RedirectUnauthorizedMiddleware(next echo.HandlerFunc) echo.Han
 		return next(c)
 	}
 }
+
+func (h *Handler) Middleware3(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		fmt.Println("middleware3")
+		authorized := getBool(c, "authorized")
+		fmt.Println("authorized", authorized)
+		return next(c)
+	}
+}

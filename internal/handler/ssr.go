@@ -45,6 +45,20 @@ func (h *Handler) GetAttempts(c echo.Context) error {
 	return c.Render(http.StatusOK, "attempts.html", resp)
 }
 
+func (h *Handler) GetAttempt(c echo.Context) error {
+	authorized := getBool(c, "authorized")
+	var role model.Role
+	if authorized {
+		role = model.Role(c.Get("role").(string))
+	}
+	id := c.Param("id")
+	resp, err := h.Service.GetAttempt(id, authorized, string(role))
+	if err != nil {
+		return c.Render(http.StatusBadRequest, "message.html", model.NewTmplMessage("Ошибка получения решения: "+err.Error(), true))
+	}
+	return c.Render(http.StatusOK, "attempt.html", resp)
+}
+
 func (h *Handler) Logout(c echo.Context) error {
 	removeCookie(c, "auth")
 	return c.Redirect(302, "/")

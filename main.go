@@ -38,6 +38,7 @@ func main() {
 	e.GET("/reg", hlr.GetReg, hlr.CheckCookieJwtMiddleware)
 	e.GET("/tasks", hlr.GetTasks, hlr.CheckCookieJwtMiddleware, hlr.RedirectUnauthorizedMiddleware)
 	e.GET("/attempts", hlr.GetAttempts, hlr.CheckCookieJwtMiddleware, hlr.RedirectUnauthorizedMiddleware)
+	e.GET("/attempt/:id", hlr.GetAttempt, hlr.CheckCookieJwtMiddleware)
 
 	e.POST("/auth", hlr.PostAuth)
 	e.POST("/reg", hlr.PostReg)

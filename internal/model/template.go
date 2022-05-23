@@ -19,3 +19,9 @@ type TemplateTasks struct {
 type TemplateAttempts struct {
 	Attempts []AttemptView
 }
+
+type TemplateAttempt struct {
+	IsAuthorized bool
+	Role         string
+	Attempt      AttemptView
+}
