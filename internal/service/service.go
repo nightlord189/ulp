@@ -74,6 +74,16 @@ func (s *Service) GetTasks(userID string) (model.TemplateTasks, error) {
 	}, err
 }
 
+func (s *Service) CreateTask(req model.ChangeTaskRequest) error {
+	task := model.TaskDB{}
+	task.Fill(req)
+	err := s.DB.CreateEntity(&task)
+	if err != nil {
+		return fmt.Errorf("err create task: %w", err)
+	}
+	return nil
+}
+
 func (s *Service) DeleteTask(id int) error {
 	err := s.DB.DeleteEntityByField("id", strconv.Itoa(id), model.TaskDB{})
 	if err != nil {
@@ -91,6 +101,12 @@ func (s *Service) GetAttempts(userID string) (model.TemplateAttempts, error) {
 	return model.TemplateAttempts{
 		Attempts: attempts,
 	}, err
+}
+
+func (s *Service) GetDockerfileTemplates() ([]model.DockerfileTemplateDB, error) {
+	entities := make([]model.DockerfileTemplateDB, 0)
+	err := s.DB.GetAllEntities(&entities)
+	return entities, err
 }
 
 func (s *Service) GetAttempt(attemptID string, isAuthorized bool, role string) (model.TemplateAttempt, error) {

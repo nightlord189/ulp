@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/nightlord189/ulp/internal/config"
 	"github.com/nightlord189/ulp/internal/db"
+	"github.com/nightlord189/ulp/internal/model"
 	"github.com/nightlord189/ulp/internal/service"
 	"html/template"
 	"io"
@@ -40,6 +42,13 @@ func (h *Handler) Render(w io.Writer, name string, data interface{}, c echo.Cont
 	return h.templates.ExecuteTemplate(w, name, data)
 }
 
+func renderMessage(c echo.Context, message string, isError bool) error {
+	authorized := getBool(c, "authorized")
+	role := getString(c, "role")
+	tmpl := model.NewTmplMessage(message, isError, authorized, role)
+	return c.Render(http.StatusBadRequest, "message.html", tmpl)
+}
+
 func getBool(c echo.Context, key string) bool {
 	var value bool
 	valueCommon := c.Get(key)
@@ -47,6 +56,10 @@ func getBool(c echo.Context, key string) bool {
 		value = valueCommon.(bool)
 	}
 	return value
+}
+
+func getString(c echo.Context, key string) string {
+	return fmt.Sprintf("%v", c.Get(key))
 }
 
 func removeCookie(c echo.Context, name string) {

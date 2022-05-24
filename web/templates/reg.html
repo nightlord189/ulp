@@ -32,17 +32,17 @@
             <form action="/reg" method="post">
                 <div class="form-group">
                     <label for="username">Логин</label>
-                    <input type="text" class="form-control" name="username" id="username" aria-describedby="emailHelp" placeholder="Введите желаемый логин">
+                    <input type="text" class="form-control" required name="username" id="username" aria-describedby="emailHelp" placeholder="Введите желаемый логин">
                     <small id="usernameHelp" class="form-text text-muted">Например, tutor0801</small>
                 </div>
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" class="form-control" name="email" id="email" required aria-describedby="emailHelp" placeholder="Введите ваш email">
+                    <input type="email" class="form-control" required name="email" id="email" required aria-describedby="emailHelp" placeholder="Введите ваш email">
                     <small id="emailHelp" class="form-text text-muted">Мы будем использовать его для восстановления доступа</small>
                 </div>
                 <div class="form-group">
                     <label for="password">Пароль</label>
-                    <input type="password" class="form-control" name="password" id="password" placeholder="Введите пароль">
+                    <input type="password" class="form-control" required name="password" id="password" placeholder="Введите пароль">
                     <small id="passwordHelp" class="form-text text-muted">Не короче 6 символов</small>
                 </div>
                 <div class="form-group">

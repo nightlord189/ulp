@@ -23,7 +23,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Задания</a>
+                    <a class="nav-link" href="/tasks">Задания</a>
                 </li>
             </ul>
         </div>
@@ -37,20 +37,20 @@
         </div>
         <div class="col-6">
             <h1>Редактировать задание</h1>
-            <form>
+            <form action="/task/create" method="post">
                 <div class="form-group">
                     <label for="name">Название</label>
-                    <input type="text" class="form-control" id="name" aria-describedby="emailHelp" placeholder="Введите название задания">
+                    <input type="text" class="form-control" required name="name" id="name" aria-describedby="emailHelp" placeholder="Введите название задания">
                     <small id="usernameHelp" class="form-text text-muted">Например, "Проверка наличия тега h1"</small>
                 </div>
                 <div class="form-group">
                     <label for="description">Описание</label>
-                    <textarea class="form-control" id="description"  placeholder="Введите описание задания" rows="4"></textarea>
+                    <textarea class="form-control" name="description" id="description" placeholder="Введите описание задания" rows="4"></textarea>
                     <small id="descriptionHelp" class="form-text text-muted">Например, здесь можно описать инструкции для студентов</small>
                 </div>
                 <div class="form-group">
                     <label for="taskType">Тип задания</label>
-                    <select class="form-control" id="taskType">
+                    <select class="form-control" name="taskType" required id="taskType">
                         <option value="console" selected>Консольное приложение</option>
                         <option value="web_api" >Web-API</option>
                         <option value="html">HTML</option>
@@ -58,33 +58,29 @@
                 </div>
                 <div class="form-group">
                     <label for="dockerfileType">Dockerfile решения</label>
-                    <select class="form-control" id="dockerfileType">
-                        <option value="go_console" selected>Go console</option>
-                        <option value="js_console" >JS console</option>
-                        <option value="go_api">Go API-server</option>
-                        <option value="go_html">Go html</option>
-                        <option value="custom">Пользовательский</option>
+                    <select class="form-control" name="dockerfileType" required id="dockerfileType">
+                        <option value="custom" selected>Пользовательский</option>
                     </select>
                     <br>
-                    <textarea class="form-control" id="dockerfile"  placeholder="Dockerfile" rows="10"></textarea>
+                    <textarea class="form-control" name="dockerfile" required id="dockerfile"  placeholder="Dockerfile" rows="10"></textarea>
                     <small id="dockerfileHelp" class="form-text text-muted">Здесь можно проверить и отредактировать Dockerfile, по которому автогрейдер будет упаковывать решение студента при проверке</small>
                 </div>
                 <p><b>Тесткейс #1</b></p>
                 <div class="form-group">
                     <label for="testCaseType">Тип тесткейса</label>
-                    <select class="form-control" id="testCaseType">
+                    <select class="form-control" name="testCaseType" required id="testCaseType">
                         <option value="contains" selected>Содержит</option>
                         <option value="equal" >Равно</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="testCaseUrl">URL</label>
-                    <input type="text" disabled class="form-control" id="testCaseUrl" aria-describedby="emailHelp" placeholder="Введите URL вызываемого метода API (GET-запрос)">
+                    <input type="text" disabled class="form-control" name="testCaseUrl" id="testCaseUrl" aria-describedby="emailHelp" placeholder="Введите URL вызываемого метода API (GET-запрос)">
                     <small id="testCaseUrlHelp" class="form-text text-muted">Например, "/user/add"</small>
                 </div>
                 <div class="form-group">
                     <label for="testCaseExpected">Ожидаемое значение</label>
-                    <input type="text" class="form-control" id="testCaseExpected" aria-describedby="emailHelp" placeholder="Введите ожидаемое значение">
+                    <input type="text" class="form-control" required name="testCaseExpected" id="testCaseExpected" aria-describedby="emailHelp" placeholder="Введите ожидаемое значение">
                     <small id="testCaseExpectedHelp" class="form-text text-muted">Например, "hello, world"</small>
                 </div>
                 <button type="submit" class="btn btn-primary">Сохранить</button>
@@ -98,6 +94,57 @@
         <span class="text-muted footer-text">Demo by Alexey Buravov for the master's thesis in <a href="https://iitu.edu.kz">IITU</a>, 2022</span>
     </footer>
 </div>
+
+<script>
+    console.log("test2");
+
+    const dockerfileSelect = document.getElementById("dockerfileType");
+    const taskTypeSelect = document.getElementById("taskType");
+    const dockerfileArea = document.getElementById("dockerfile");
+    const urlInput = document.getElementById("testCaseUrl");
+
+    let templates = [];
+
+    //templates = {{.Dockerfiles}};
+
+    const onDockerfileSelectChange = () => {
+        console.log(dockerfileSelect.value);
+        const filtered = templates.filter(function(template) {
+            return template.key === dockerfileSelect.value;
+        });
+        if (filtered.length > 0) {
+            dockerfileArea.innerHTML = filtered[0].content;
+        }
+    }
+
+    const onTaskTypeSelectChange = () => {
+        let isUrlNeeded = taskTypeSelect.value === "web_api" ||  taskTypeSelect.value === "html";
+        urlInput.disabled = !isUrlNeeded;
+        urlInput.required = isUrlNeeded;
+        //urlInput.style.display = isUrlNeeded ? "block" : "none";
+    }
+
+    dockerfileSelect.onchange = onDockerfileSelectChange;
+    taskTypeSelect.onchange = onTaskTypeSelectChange;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", "/api/template/dockerfile");
+    xhr.send();
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            templates = JSON.parse(xhr.responseText);
+
+            templates.forEach((template) => {
+                let opt = document.createElement('option');
+                opt.value = template.key;
+                opt.innerHTML = template.name;
+                dockerfileSelect.appendChild(opt);
+            });
+        } else  {
+            console.log("err get templates");
+        }
+    }
+</script>
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>

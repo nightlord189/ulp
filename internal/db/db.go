@@ -58,6 +58,7 @@ func autoMigrate(db *gorm.DB) error {
 		model.TaskDB{},
 		model.UserDB{},
 		model.AttemptDB{},
+		model.DockerfileTemplateDB{},
 	)
 	if err != nil {
 		return err

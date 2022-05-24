@@ -3,12 +3,12 @@ package handler
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/nightlord189/ulp/internal/model"
 	"github.com/nightlord189/ulp/internal/service"
 )
 
-func (h *Handler) CheckCookieJwtMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (h *Handler) CookieJwtMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		fmt.Println("middleware")
 		authCookie, err := c.Cookie("auth")
 		if err != nil || authCookie.Value == "" {
 			c.Set("authorized", false)
@@ -32,12 +32,31 @@ func (h *Handler) CheckCookieJwtMiddleware(next echo.HandlerFunc) echo.HandlerFu
 	}
 }
 
-func (h *Handler) RedirectUnauthorizedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (h *Handler) AuthorizedMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		fmt.Println("middleware2")
 		authorized := getBool(c, "authorized")
 		if !authorized {
 			return c.Redirect(302, "/auth")
+		}
+		return next(c)
+	}
+}
+
+func (h *Handler) TutorMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		role := model.Role(c.Get("role").(string))
+		if role != model.RoleTutor {
+			return c.Redirect(302, "/")
+		}
+		return next(c)
+	}
+}
+
+func (h *Handler) StudentMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		role := model.Role(c.Get("role").(string))
+		if role != model.RoleStudent {
+			return c.Redirect(302, "/")
 		}
 		return next(c)
 	}

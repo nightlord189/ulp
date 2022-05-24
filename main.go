@@ -32,17 +32,23 @@ func main() {
 		return c.String(http.StatusOK, "healthz")
 	})
 
-	e.GET("/", hlr.Index, hlr.CheckCookieJwtMiddleware, hlr.RedirectUnauthorizedMiddleware)
+	e.GET("/", hlr.Index, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware)
 	e.GET("/logout", hlr.Logout)
-	e.GET("/auth", hlr.GetAuth, hlr.CheckCookieJwtMiddleware)
-	e.GET("/reg", hlr.GetReg, hlr.CheckCookieJwtMiddleware)
-	e.GET("/tasks", hlr.GetTasks, hlr.CheckCookieJwtMiddleware, hlr.RedirectUnauthorizedMiddleware)
-	e.POST("/task/:id/delete", hlr.DeleteTask, hlr.CheckCookieJwtMiddleware, hlr.RedirectUnauthorizedMiddleware)
-	e.GET("/attempts", hlr.GetAttempts, hlr.CheckCookieJwtMiddleware, hlr.RedirectUnauthorizedMiddleware)
-	e.GET("/attempt/:id", hlr.GetAttempt, hlr.CheckCookieJwtMiddleware)
+	e.GET("/auth", hlr.GetAuth, hlr.CookieJwtMiddleware)
+	e.GET("/reg", hlr.GetReg, hlr.CookieJwtMiddleware)
+
+	e.GET("/tasks", hlr.GetTasks, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.TutorMiddleware)
+	e.GET("/task/create", hlr.GetCreateTask, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.TutorMiddleware)
+	e.POST("/task/create", hlr.PostCreateTask, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.TutorMiddleware)
+	e.POST("/task/:id/delete", hlr.DeleteTask, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.TutorMiddleware)
+
+	e.GET("/attempts", hlr.GetAttempts, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.StudentMiddleware)
+	e.GET("/attempt/:id", hlr.GetAttempt, hlr.CookieJwtMiddleware)
 
 	e.POST("/auth", hlr.PostAuth)
 	e.POST("/reg", hlr.PostReg)
+
+	e.GET("/api/template/dockerfile", hlr.GetDockerfileTemplates)
 
 	err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort))
 	if err != nil {

@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 const (
 	TaskTypeConsole TaskType = "console"
@@ -60,13 +63,46 @@ func (t *TaskDB) ToView() TaskView {
 	}
 }
 
+func (t *TaskDB) Fill(req ChangeTaskRequest) {
+	t.Name = req.Name
+	t.Description = req.Description
+	t.CreatorID = req.CreatorID
+	t.Type = req.Type
+	t.Dockerfile = req.Dockerfile
+	t.TestcaseType = req.TestcaseType
+	t.TestcaseURL = req.TestcaseURL
+	t.TestcaseValue = req.TestcaseValue
+}
+
 type ChangeTaskRequest struct {
-	Name          string   `json:"name" binding:"required"`
-	Description   string   `json:"description"`
-	CreatorID     int      `json:"creatorID" binding:"required"`
-	Type          TaskType `json:"type" binding:"required"`
-	Dockerfile    string   `json:"dockerfile" binding:"required"`
-	TestcaseType  string   `json:"testCaseType" binding:"required"`
-	TestcaseURL   string   `json:"testCaseURL"`
-	TestcaseValue string   `json:"testCaseValue" binding:"required"`
+	Name          string   `json:"name" binding:"required" form:"name"`
+	Description   string   `json:"description" form:"description"`
+	CreatorID     int      `json:"creatorID"`
+	Type          TaskType `json:"type" binding:"required" form:"taskType"`
+	Dockerfile    string   `json:"dockerfile" binding:"required" form:"dockerfile"`
+	TestcaseType  string   `json:"testCaseType" binding:"required" form:"testCaseType"`
+	TestcaseURL   string   `json:"testCaseURL" form:"testCaseUrl"`
+	TestcaseValue string   `json:"testCaseValue" binding:"required" form:"testCaseExpected"`
+}
+
+func (r *ChangeTaskRequest) IsValid() error {
+	if r.Name == "" {
+		return errors.New("name is empty")
+	}
+	if r.Type == "" {
+		return errors.New("type is empty")
+	}
+	if r.Dockerfile == "" {
+		return errors.New("dockerfile is empty")
+	}
+	if r.TestcaseType == "" {
+		return errors.New("testcase type is empty")
+	}
+	if r.TestcaseValue == "" {
+		return errors.New("testcase value is empty")
+	}
+	if (r.TestcaseType == TaskTypeWebAPI || r.TestcaseType == TaskTypeHTML) && r.TestcaseURL == "" {
+		return errors.New("testcase URL is empty")
+	}
+	return nil
 }

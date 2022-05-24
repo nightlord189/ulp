@@ -24,6 +24,10 @@ func (d *Manager) GetEntityByFields(fields map[string]interface{}, entity interf
 	return d.DB.Where(fields).First(entity).Error
 }
 
+func (d *Manager) GetAllEntities(entities interface{}) error {
+	return d.DB.Find(entities).Error
+}
+
 func (d *Manager) GetEntitiesByField(field, value string, entity interface{}) error {
 	return d.DB.Where(fmt.Sprintf("%s = ?", field), value).Find(entity).Error
 }
