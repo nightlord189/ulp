@@ -7,6 +7,7 @@ import (
 	"github.com/nightlord189/ulp/internal/db"
 	"github.com/nightlord189/ulp/internal/model"
 	"gorm.io/gorm"
+	"strconv"
 	"time"
 )
 
@@ -71,6 +72,14 @@ func (s *Service) GetTasks(userID string) (model.TemplateTasks, error) {
 	return model.TemplateTasks{
 		Tasks: taskViews,
 	}, err
+}
+
+func (s *Service) DeleteTask(id int) error {
+	err := s.DB.DeleteEntityByField("id", strconv.Itoa(id), model.TaskDB{})
+	if err != nil {
+		return fmt.Errorf("err delete task in db: %w", err)
+	}
+	return nil
 }
 
 func (s *Service) GetAttempts(userID string) (model.TemplateAttempts, error) {

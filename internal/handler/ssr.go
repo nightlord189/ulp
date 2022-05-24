@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/nightlord189/ulp/internal/model"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -30,6 +31,19 @@ func (h *Handler) GetTasks(c echo.Context) error {
 		return c.Render(http.StatusBadRequest, "message.html", model.NewTmplMessage("Ошибка загрузки заданий: "+err.Error(), true))
 	}
 	return c.Render(http.StatusOK, "tasks.html", resp)
+}
+
+func (h *Handler) DeleteTask(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Render(http.StatusUnprocessableEntity, "message.html", model.NewTmplMessage("Некорректный id задания: "+err.Error(), true))
+	}
+	err = h.Service.DeleteTask(id)
+	if err != nil {
+		return c.Render(http.StatusBadRequest, "message.html", model.NewTmplMessage("Ошибка удаления задания: "+err.Error(), true))
+	}
+	return c.Redirect(302, "/tasks")
 }
 
 func (h *Handler) GetAttempts(c echo.Context) error {

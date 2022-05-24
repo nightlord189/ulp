@@ -54,11 +54,9 @@
                         <td>{{.Type}}</td>
                         <td>{{.CreatedAt}}</td>
                         <td>
-                            <a href="/task/{{.ID}}/attempt">Ссылка для студентов</a>
-                            <br>
-                            <a href="/task/{{.ID}}/edit">Редактировать</a>
-                            <br>
-                            <a href="/task/{{.ID}}/delete">Удалить</a>
+                            <a class="btn btn-link" href="/task/{{.ID}}/attempt">Ссылка для студентов</a>
+                            <a class="btn btn-link" href="/task/{{.ID}}/edit">Редактировать</a>
+                            <button type="button" class="btn btn-link" itemid="{{.ID}}">Удалить</button>
                         </td>
                     </tr>
                     {{end}}
@@ -74,6 +72,50 @@
         <span class="text-muted footer-text">Demo by Alexey Buravov for the master's thesis in <a href="https://iitu.edu.kz">IITU</a>, 2022</span>
     </footer>
 </div>
+
+<script>
+    console.log("test1");
+
+    function postAndRedirect(url, postData)
+    {
+        let postFormStr = "<form method='POST' action='" + url + "'>\n";
+
+        for (let key in postData)
+        {
+            if (postData.hasOwnProperty(key))
+            {
+                postFormStr += "<input type='hidden' name='" + key + "' value='" + postData[key] + "'></input>";
+            }
+        }
+
+        postFormStr += "</form>";
+
+        const formElement = $(postFormStr);
+
+        $('body').append(formElement);
+        $(formElement).submit();
+    }
+
+    const onDeleteClick = (event) => {
+        console.log("delete click");
+
+        const confirmed = confirm("Вы действительно хотите удалить задачу?");
+        if (!confirmed) {
+            return;
+        }
+
+        const itemID = event.target.getAttribute("itemid");
+        console.log(itemID);
+
+        //window.location.href = `/task/${itemID}/delete`;
+        postAndRedirect(`/task/${itemID}/delete`, {});
+    }
+
+    const elements = document.querySelectorAll('td > button');
+    for (let button of elements) {
+        button.addEventListener("click", onDeleteClick);
+    }
+</script>
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
