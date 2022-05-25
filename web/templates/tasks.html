@@ -43,7 +43,7 @@
                         <th scope="col">#</th>
                         <th scope="col">Название</th>
                         <th scope="col">Тип</th>
-                        <th scope="col">Дата создания</th>
+                        <th scope="col">Дата изменения</th>
                         <th scope="col">Действия</th>
                     </tr>
                     </thead>
@@ -53,7 +53,7 @@
                         <th scope="row">{{.Order}}</th>
                         <td>{{.Name}}</td>
                         <td>{{.Type}}</td>
-                        <td>{{.CreatedAt}}</td>
+                        <td>{{.UpdatedAt}}</td>
                         <td>
                             <a class="btn btn-link" href="/task/{{.ID}}/attempt">Ссылка для студентов</a>
                             <a class="btn btn-link" href="/task/{{.ID}}/edit">Редактировать</a>

@@ -30,11 +30,21 @@ func (h *Handler) GetTasks(c echo.Context) error {
 }
 
 func (h *Handler) GetCreateTask(c echo.Context) error {
-	entities, _ := h.Service.GetDockerfileTemplates()
-	data := model.TemplateEditTask{
-		Dockerfiles: entities,
-	}
+	data, _ := h.Service.GetCreateTask()
 	return c.Render(http.StatusOK, "edit_task.html", data)
+}
+
+func (h *Handler) GetEditTask(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return renderMessage(c, "Некорректный id задания: "+err.Error(), true)
+	}
+	response, err := h.Service.GetEditTask(id)
+	if err != nil {
+		return renderMessage(c, "Ошибка: "+err.Error(), true)
+	}
+	return c.Render(http.StatusOK, "edit_task.html", response)
 }
 
 func (h *Handler) PostCreateTask(c echo.Context) error {
@@ -54,6 +64,31 @@ func (h *Handler) PostCreateTask(c echo.Context) error {
 		return renderMessage(c, "Не удалось создать задание: "+err.Error(), true)
 	}
 	return renderMessage(c, "Задание успешно создано", false)
+}
+
+func (h *Handler) PostEditTask(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return renderMessage(c, "Некорректный id задания: "+err.Error(), true)
+	}
+	var req model.ChangeTaskRequest
+	err = c.Bind(&req)
+	if err != nil {
+		return renderMessage(c, "Ошибка формы: "+err.Error(), true)
+	}
+	if err = req.IsValid(); err != nil {
+		return renderMessage(c, "Некорректный запрос: "+err.Error(), true)
+	}
+	req.ID = id
+	userIDStr := getString(c, "user_id")
+	userID, _ := strconv.Atoi(userIDStr)
+	req.CreatorID = userID
+	err = h.Service.EditTask(req)
+	if err != nil {
+		return renderMessage(c, "Не удалось изменить задание: "+err.Error(), true)
+	}
+	return renderMessage(c, "Задание успешно обновлено", false)
 }
 
 func (h *Handler) DeleteTask(c echo.Context) error {

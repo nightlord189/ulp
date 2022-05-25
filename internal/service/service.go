@@ -74,12 +74,53 @@ func (s *Service) GetTasks(userID string) (model.TemplateTasks, error) {
 	}, err
 }
 
+func (s *Service) GetCreateTask() (model.TemplateEditTask, error) {
+	dockerfiles := make([]model.DockerfileTemplateDB, 0)
+	err := s.DB.GetAllEntities(&dockerfiles)
+	return model.TemplateEditTask{
+		Dockerfiles: dockerfiles,
+	}, err
+}
+
+func (s *Service) GetEditTask(id int) (model.TemplateEditTask, error) {
+	result := model.TemplateEditTask{
+		IsEdit: true,
+	}
+	dockerfiles := make([]model.DockerfileTemplateDB, 0)
+	err := s.DB.GetAllEntities(&dockerfiles)
+	result.Dockerfiles = dockerfiles
+	if err != nil {
+		return result, fmt.Errorf("err get dockerfile templates: %w", err)
+	}
+	var task model.TaskDB
+	err = s.DB.GetEntityByField("id", strconv.Itoa(id), &task)
+	if err != nil {
+		return result, fmt.Errorf("err get task from db: %w", err)
+	}
+	result.Fill(task)
+	return result, nil
+}
+
 func (s *Service) CreateTask(req model.ChangeTaskRequest) error {
 	task := model.TaskDB{}
 	task.Fill(req)
 	err := s.DB.CreateEntity(&task)
 	if err != nil {
 		return fmt.Errorf("err create task: %w", err)
+	}
+	return nil
+}
+
+func (s *Service) EditTask(req model.ChangeTaskRequest) error {
+	var task model.TaskDB
+	err := s.DB.GetEntityByField("id", strconv.Itoa(req.ID), &task)
+	if err != nil {
+		return fmt.Errorf("err get task from db: %w", err)
+	}
+	task.Fill(req)
+	err = s.DB.UpdateEntity(&task)
+	if err != nil {
+		return fmt.Errorf("err update task: %w", err)
 	}
 	return nil
 }

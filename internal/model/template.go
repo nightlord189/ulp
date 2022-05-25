@@ -31,5 +31,25 @@ type TemplateAttempt struct {
 }
 
 type TemplateEditTask struct {
-	Dockerfiles []DockerfileTemplateDB
+	IsEdit           bool
+	ID               int
+	Name             string
+	Description      string
+	TaskType         string
+	Dockerfile       string
+	TestCaseType     string
+	TestCaseURL      string
+	TestCaseExpected string
+	Dockerfiles      []DockerfileTemplateDB
+}
+
+func (t *TemplateEditTask) Fill(task TaskDB) {
+	t.ID = task.ID
+	t.Name = task.Name
+	t.Description = task.Description
+	t.TaskType = string(task.Type)
+	t.Dockerfile = task.Dockerfile
+	t.TestCaseType = task.TestcaseType
+	t.TestCaseURL = task.TestcaseURL
+	t.TestCaseExpected = task.TestcaseExpected
 }

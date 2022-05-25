@@ -37,7 +37,11 @@
         </div>
         <div class="col-6">
             <h1>Редактировать задание</h1>
-            <form action="/task/create" method="post">
+            {{if .IsEdit}}
+                <form action="/task/{{.ID}}/edit" method="post">
+            {{else}}
+                <form action="/task/create" method="post">
+            {{end}}
                 <div class="form-group">
                     <label for="name">Название</label>
                     <input type="text" class="form-control" required name="name" id="name" aria-describedby="emailHelp" placeholder="Введите название задания">
@@ -98,30 +102,43 @@
 <script>
     console.log("test2");
 
+    const nameInput = document.getElementById("name");
+    const descriptionInput = document.getElementById("description");
     const dockerfileSelect = document.getElementById("dockerfileType");
     const taskTypeSelect = document.getElementById("taskType");
+    const testCaseTypeSelect = document.getElementById("testCaseType");
     const dockerfileArea = document.getElementById("dockerfile");
     const urlInput = document.getElementById("testCaseUrl");
+    const testCaseExpectedInput = document.getElementById("testCaseExpected");
 
-    let templates = [];
-
-    //templates = {{.Dockerfiles}};
-
-    const onDockerfileSelectChange = () => {
-        console.log(dockerfileSelect.value);
-        const filtered = templates.filter(function(template) {
-            return template.key === dockerfileSelect.value;
-        });
-        if (filtered.length > 0) {
-            dockerfileArea.innerHTML = filtered[0].content;
-        }
-    }
+    let dockerfileTemplates = [];
 
     const onTaskTypeSelectChange = () => {
         let isUrlNeeded = taskTypeSelect.value === "web_api" ||  taskTypeSelect.value === "html";
         urlInput.disabled = !isUrlNeeded;
         urlInput.required = isUrlNeeded;
         //urlInput.style.display = isUrlNeeded ? "block" : "none";
+    }
+
+    // for edit existing task
+    nameInput.value = {{.Name}};
+    descriptionInput.value = {{.Description}};
+    dockerfileArea.value = {{.Dockerfile}};
+    taskTypeSelect.value = {{.TaskType}};
+    testCaseTypeSelect.value = {{.TestCaseType}};
+    urlInput.value = {{.TestCaseURL}};
+    testCaseExpectedInput.value = {{.TestCaseExpected}};
+    onTaskTypeSelectChange();
+    //dockerfileTemplates = {{.Dockerfiles}};
+
+    const onDockerfileSelectChange = () => {
+        console.log(dockerfileSelect.value);
+        const filtered = dockerfileTemplates.filter(function(template) {
+            return template.key === dockerfileSelect.value;
+        });
+        if (filtered.length > 0) {
+            dockerfileArea.value = filtered[0].content;
+        }
     }
 
     dockerfileSelect.onchange = onDockerfileSelectChange;
@@ -132,16 +149,16 @@
     xhr.send();
     xhr.onload = function() {
         if (xhr.status === 200) {
-            templates = JSON.parse(xhr.responseText);
+            dockerfileTemplates = JSON.parse(xhr.responseText);
 
-            templates.forEach((template) => {
+            dockerfileTemplates.forEach((template) => {
                 let opt = document.createElement('option');
                 opt.value = template.key;
                 opt.innerHTML = template.name;
                 dockerfileSelect.appendChild(opt);
             });
         } else  {
-            console.log("err get templates");
+            console.log("err get dockerfile templates");
         }
     }
 </script>
