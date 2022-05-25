@@ -46,7 +46,7 @@ func (h *Handler) TutorMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		role := model.Role(c.Get("role").(string))
 		if role != model.RoleTutor {
-			return c.Redirect(302, "/")
+			return renderMessage(c, "Данная страница предназначена только для преподавателей", true)
 		}
 		return next(c)
 	}
@@ -56,7 +56,7 @@ func (h *Handler) StudentMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		role := model.Role(c.Get("role").(string))
 		if role != model.RoleStudent {
-			return c.Redirect(302, "/")
+			return renderMessage(c, "Данная страница предназначена только для студентов", true)
 		}
 		return next(c)
 	}
