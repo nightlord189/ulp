@@ -34,6 +34,16 @@ func (h *Handler) GetCreateTask(c echo.Context) error {
 	return c.Render(http.StatusOK, "edit_task.html", data)
 }
 
+func (h *Handler) GetAttemptTask(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return renderMessage(c, "Некорректный id задания: "+err.Error(), true)
+	}
+	data, _ := h.Service.GetAttemptTask(id)
+	return c.Render(http.StatusOK, "upload_attempt.html", data)
+}
+
 func (h *Handler) GetEditTask(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

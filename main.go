@@ -43,6 +43,7 @@ func main() {
 	e.GET("/task/:id/edit", hlr.GetEditTask, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.TutorMiddleware)
 	e.POST("/task/:id/edit", hlr.PostEditTask, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.TutorMiddleware)
 	e.POST("/task/:id/delete", hlr.DeleteTask, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.TutorMiddleware)
+	e.GET("/task/:id/attempt", hlr.GetAttemptTask, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.StudentMiddleware)
 
 	e.GET("/attempts", hlr.GetAttempts, hlr.CookieJwtMiddleware, hlr.AuthorizedMiddleware, hlr.StudentMiddleware)
 	e.GET("/attempt/:id", hlr.GetAttempt, hlr.CookieJwtMiddleware)

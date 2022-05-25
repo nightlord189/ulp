@@ -101,6 +101,17 @@ func (s *Service) GetEditTask(id int) (model.TemplateEditTask, error) {
 	return result, nil
 }
 
+func (s *Service) GetAttemptTask(id int) (model.TemplateUploadAttempt, error) {
+	result := model.TemplateUploadAttempt{}
+	var task model.TaskDB
+	err := s.DB.GetEntityByField("id", strconv.Itoa(id), &task)
+	if err != nil {
+		return result, fmt.Errorf("err get task from db: %w", err)
+	}
+	result.Fill(task)
+	return result, nil
+}
+
 func (s *Service) CreateTask(req model.ChangeTaskRequest) error {
 	task := model.TaskDB{}
 	task.Fill(req)

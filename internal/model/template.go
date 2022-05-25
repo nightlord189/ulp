@@ -53,3 +53,17 @@ func (t *TemplateEditTask) Fill(task TaskDB) {
 	t.TestCaseURL = task.TestcaseURL
 	t.TestCaseExpected = task.TestcaseExpected
 }
+
+type TemplateUploadAttempt struct {
+	TaskID          int
+	TaskName        string
+	TaskDescription string
+	TaskType        string
+}
+
+func (t *TemplateUploadAttempt) Fill(task TaskDB) {
+	t.TaskID = task.ID
+	t.TaskName = task.Name
+	t.TaskDescription = task.Description
+	t.TaskType = string(task.Type)
+}
