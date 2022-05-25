@@ -34,6 +34,8 @@ type AttemptView struct {
 	CreatedAtFormat string    `gorm:"-"`
 	State           string    `gorm:"column:state"`
 	CreatorUsername string    `gorm:"column:u_username"`
+	RunningTime     int       `gorm:"column:running_time"`
+	Log             string    `gorm:"column:log"`
 }
 
 type AttemptRequest struct {

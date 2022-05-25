@@ -91,6 +91,14 @@
             </div>
             <div class="row">
                 <div class="col-6">
+                    <h6>Время выполнения</h6>
+                </div>
+                <div class="col-6">
+                    {{.Attempt.RunningTime}} секунд
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
                     <h6>Результат</h6>
                 </div>
                 <div class="col-6">
@@ -101,6 +109,24 @@
                     {{end}}
                 </div>
             </div>
+
+            <div class="row mt-2">
+                <div class="col-6">
+                    <a class="btn btn-secondary" data-toggle="collapse" href="#collapseLog" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        Лог проверки
+                    </a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="collapse" id="collapseLog">
+                        <div class="card card-body">
+                            {{.Attempt.Log}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
         <div class="col-sm">
         </div>
