@@ -8,9 +8,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/nightlord189/ulp/internal/model"
+	specs "github.com/opencontainers/image-spec/specs-go/v1"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -19,6 +21,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (s *Service) CreateAttempt(req model.AttemptRequest, file *multipart.FileHeader, fileSrc *multipart.File) error {
@@ -52,28 +55,101 @@ func (s *Service) CreateAttempt(req model.AttemptRequest, file *multipart.FileHe
 	if err != nil {
 		return fmt.Errorf("err write dockerfile: %w", err)
 	}
-	err = buildAndRun(task, &attempt, attemptDir, attempt.ID)
+	err = buildAndRun(task, &attempt, attemptDir)
 	if err != nil {
 		return fmt.Errorf("err build and run: %w", err)
 	}
 	// TODO: create container
 	// TODO: exec or make web-request to container
-	// TODO: stop container and remove image
 	return nil
 }
 
-func buildAndRun(task model.TaskDB, attempt *model.AttemptDB, attemptDir string, attemptID int) error {
+func buildAndRun(task model.TaskDB, attempt *model.AttemptDB, attemptDir string) error {
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		return fmt.Errorf("error create docker-client: %w", err)
 	}
-	err = build(ctx, cli, attemptDir, attemptID)
+	defer func() {
+		err := cli.Close()
+		if err != nil {
+			fmt.Println("err close docker-client:", err)
+		}
+	}()
+	err = build(ctx, cli, attemptDir, attempt.ID)
 	if err != nil {
 		attempt.Log += "docker build failed\n"
 		return fmt.Errorf("error build image: %w", err)
 	}
+	defer removeImage(ctx, cli, attempt)
 	attempt.Log += "docker build succeed\n"
+	err = run(ctx, cli, attempt)
+	if err != nil {
+		attempt.Log += "run failed\n"
+		return fmt.Errorf("error run image: %w", err)
+	}
+	return nil
+}
+
+func removeImage(ctx context.Context, cli *client.Client, attempt *model.AttemptDB) {
+	imageName := fmt.Sprintf("ulp/grader/%d:latest", attempt.ID)
+	_, err := cli.ImageRemove(ctx, imageName, types.ImageRemoveOptions{})
+	if err != nil {
+		fmt.Printf("error on removing image %s: %v", imageName, err)
+	}
+	attempt.Log += "image removed\n"
+}
+
+func run(ctx context.Context, cli *client.Client, attempt *model.AttemptDB) error {
+	containerName := fmt.Sprintf("grader%d", attempt.ID)
+	imageName := fmt.Sprintf("ulp/grader/%d:latest", attempt.ID)
+
+	resp, err := cli.ContainerCreate(ctx, &container.Config{
+		Image: imageName,
+		//Cmd:   []string{"cat", "/etc/hosts"},
+		Tty: true,
+	}, nil, nil, &specs.Platform{
+		OS:           "linux",
+		Architecture: "arm64",
+	}, containerName)
+	if err != nil {
+		return fmt.Errorf("error create container: %w", err)
+	}
+
+	defer func() {
+		fmt.Println("removing container")
+		if err := cli.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{}); err != nil {
+			fmt.Println("error remove container:", err)
+			return
+		}
+		fmt.Printf("container %s removed\n", resp.ID)
+		attempt.Log += "docker container removed\n"
+	}()
+
+	if err := cli.ContainerStart(ctx, resp.ID,
+		types.ContainerStartOptions{
+			CheckpointID:  "",
+			CheckpointDir: "",
+		}); err != nil {
+		return fmt.Errorf("error start container: %w", err)
+	}
+
+	defer func() {
+		fmt.Println("stopping container")
+		stopTimeout := 5 * time.Second
+		if err := cli.ContainerStop(ctx, resp.ID, &stopTimeout); err != nil {
+			fmt.Println("error stop container:", err)
+			return
+		}
+		fmt.Printf("container %s stopped\n", resp.ID)
+		attempt.Log += "docker container stopped\n"
+	}()
+
+	fmt.Println("container started")
+	time.Sleep(3 * time.Second)
+	fmt.Println("after 3 seconds")
+	attempt.Log += "docker container started\n"
+
 	return nil
 }
 
