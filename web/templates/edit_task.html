@@ -87,6 +87,7 @@
                     <input type="text" class="form-control" required name="testCaseExpected" id="testCaseExpected" aria-describedby="emailHelp" placeholder="Введите ожидаемое значение">
                     <small id="testCaseExpectedHelp" class="form-text text-muted">Например, "hello, world"</small>
                 </div>
+                    <input type="hidden" id="userID" name="userID" value="{{.UserID}}">
                 <button type="submit" class="btn btn-primary">Сохранить</button>
             </form>
         </div>
@@ -121,6 +122,7 @@
     }
 
     // for edit existing task
+    {{if .IsEdit}}
     nameInput.value = {{.Name}};
     descriptionInput.value = {{.Description}};
     dockerfileArea.value = {{.Dockerfile}};
@@ -128,6 +130,7 @@
     testCaseTypeSelect.value = {{.TestCaseType}};
     urlInput.value = {{.TestCaseURL}};
     testCaseExpectedInput.value = {{.TestCaseExpected}};
+    {{end}}
     onTaskTypeSelectChange();
     //dockerfileTemplates = {{.Dockerfiles}};
 

@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 const (
 	AttemptStateSuccess AttemptState = "success"
@@ -39,6 +42,16 @@ type AttemptView struct {
 }
 
 type AttemptRequest struct {
-	TaskID    string `json:"taskId" binding:"required"`
-	CreatorID int    `json:"creatorID" binding:"required"`
+	TaskID    int `param:"id"`
+	CreatorID int `form:"userID"`
+}
+
+func (r *AttemptRequest) IsValid() error {
+	if r.TaskID == 0 {
+		return errors.New("TaskID is empty")
+	}
+	if r.CreatorID == 0 {
+		return errors.New("CreatorID is empty")
+	}
+	return nil
 }

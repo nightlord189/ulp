@@ -15,7 +15,7 @@ const getAttemptSQL = "select a.*, t.name as t_name, t.description as t_descript
 	"left join users u on u.id = a.creator_id " +
 	"where a.id = ? order by a.id desc"
 
-func (d *Manager) GetAttemptsByStudentID(studentID string) ([]model.AttemptView, error) {
+func (d *Manager) GetAttemptsByStudentID(studentID int) ([]model.AttemptView, error) {
 	entities := make([]model.AttemptView, 0)
 	err := d.DB.Raw(getAttemptsSQL, studentID).Scan(&entities).Error
 	return entities, err

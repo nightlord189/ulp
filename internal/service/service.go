@@ -61,9 +61,9 @@ func (s *Service) Reg(req model.RegRequest) error {
 	return nil
 }
 
-func (s *Service) GetTasks(userID string) (model.TemplateTasks, error) {
+func (s *Service) GetTasks(userID int) (model.TemplateTasks, error) {
 	tasks := make([]model.TaskDB, 0)
-	err := s.DB.GetEntitiesByField("creator_id", userID, &tasks)
+	err := s.DB.GetEntitiesByField("creator_id", strconv.Itoa(userID), &tasks)
 	taskViews := make([]model.TaskView, len(tasks))
 	for i := range tasks {
 		taskViews[i] = tasks[i].ToView()
@@ -74,16 +74,18 @@ func (s *Service) GetTasks(userID string) (model.TemplateTasks, error) {
 	}, err
 }
 
-func (s *Service) GetCreateTask() (model.TemplateEditTask, error) {
+func (s *Service) GetCreateTask(userID int) (model.TemplateEditTask, error) {
 	dockerfiles := make([]model.DockerfileTemplateDB, 0)
 	err := s.DB.GetAllEntities(&dockerfiles)
 	return model.TemplateEditTask{
+		UserID:      userID,
 		Dockerfiles: dockerfiles,
 	}, err
 }
 
-func (s *Service) GetEditTask(id int) (model.TemplateEditTask, error) {
+func (s *Service) GetEditTask(taskID, userID int) (model.TemplateEditTask, error) {
 	result := model.TemplateEditTask{
+		UserID: userID,
 		IsEdit: true,
 	}
 	dockerfiles := make([]model.DockerfileTemplateDB, 0)
@@ -93,7 +95,7 @@ func (s *Service) GetEditTask(id int) (model.TemplateEditTask, error) {
 		return result, fmt.Errorf("err get dockerfile templates: %w", err)
 	}
 	var task model.TaskDB
-	err = s.DB.GetEntityByField("id", strconv.Itoa(id), &task)
+	err = s.DB.GetEntityByField("id", strconv.Itoa(taskID), &task)
 	if err != nil {
 		return result, fmt.Errorf("err get task from db: %w", err)
 	}
@@ -101,10 +103,12 @@ func (s *Service) GetEditTask(id int) (model.TemplateEditTask, error) {
 	return result, nil
 }
 
-func (s *Service) GetAttemptTask(id int) (model.TemplateUploadAttempt, error) {
-	result := model.TemplateUploadAttempt{}
+func (s *Service) GetAttemptTask(taskID, userID int) (model.TemplateUploadAttempt, error) {
+	result := model.TemplateUploadAttempt{
+		UserID: userID,
+	}
 	var task model.TaskDB
-	err := s.DB.GetEntityByField("id", strconv.Itoa(id), &task)
+	err := s.DB.GetEntityByField("id", strconv.Itoa(taskID), &task)
 	if err != nil {
 		return result, fmt.Errorf("err get task from db: %w", err)
 	}
@@ -128,6 +132,9 @@ func (s *Service) EditTask(req model.ChangeTaskRequest) error {
 	if err != nil {
 		return fmt.Errorf("err get task from db: %w", err)
 	}
+	if task.CreatorID != req.CreatorID {
+		return errors.New("задание может редактировать только его создатель")
+	}
 	task.Fill(req)
 	err = s.DB.UpdateEntity(&task)
 	if err != nil {
@@ -136,15 +143,23 @@ func (s *Service) EditTask(req model.ChangeTaskRequest) error {
 	return nil
 }
 
-func (s *Service) DeleteTask(id int) error {
-	err := s.DB.DeleteEntityByField("id", strconv.Itoa(id), model.TaskDB{})
+func (s *Service) DeleteTask(taskID, userID int) error {
+	var task model.TaskDB
+	err := s.DB.GetEntityByField("id", strconv.Itoa(taskID), &task)
+	if err != nil {
+		return fmt.Errorf("err get task from db: %w", err)
+	}
+	if task.CreatorID != userID {
+		return errors.New("задание может удалять только его создатель")
+	}
+	err = s.DB.DeleteEntityByField("id", strconv.Itoa(taskID), model.TaskDB{})
 	if err != nil {
 		return fmt.Errorf("err delete task in db: %w", err)
 	}
 	return nil
 }
 
-func (s *Service) GetAttempts(userID string) (model.TemplateAttempts, error) {
+func (s *Service) GetAttempts(userID int) (model.TemplateAttempts, error) {
 	attempts, err := s.DB.GetAttemptsByStudentID(userID)
 	for i := range attempts {
 		attempts[i].Order = i + 1

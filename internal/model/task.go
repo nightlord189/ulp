@@ -84,7 +84,7 @@ type ChangeTaskRequest struct {
 	ID               int
 	Name             string   `json:"name" binding:"required" form:"name"`
 	Description      string   `json:"description" form:"description"`
-	CreatorID        int      `json:"creatorID"`
+	CreatorID        int      `json:"userID" form:"userID"`
 	Type             TaskType `json:"type" binding:"required" form:"taskType"`
 	Dockerfile       string   `json:"dockerfile" binding:"required" form:"dockerfile"`
 	TestcaseType     string   `json:"testCaseType" binding:"required" form:"testCaseType"`

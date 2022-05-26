@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/nightlord189/ulp/internal/model"
 	"github.com/nightlord189/ulp/internal/service"
+	"strconv"
 )
 
 func (h *Handler) CookieJwtMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -25,7 +26,12 @@ func (h *Handler) CookieJwtMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		c.Set("authorized", true)
 		// проставляем нужные данные для дальнейшего использования в обработчиках
-		c.Set("user_id", claims["user_id"])
+		userIDStr := fmt.Sprintf("%v", claims["user_id"])
+		userID, err := strconv.Atoi(userIDStr)
+		if err != nil {
+			return fmt.Errorf("user_id has bad format: %w", err)
+		}
+		c.Set("user_id", userID)
 		c.Set("username", claims["username"])
 		c.Set("role", claims["role"])
 		return next(c)

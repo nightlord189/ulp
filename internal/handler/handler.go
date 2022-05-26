@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -56,6 +57,18 @@ func getBool(c echo.Context, key string) bool {
 		value = valueCommon.(bool)
 	}
 	return value
+}
+
+func getInt(c echo.Context, key string) (int, error) {
+	return strconv.Atoi(fmt.Sprintf("%v", c.Get(key)))
+}
+
+func mustGetInt(c echo.Context, key string) int {
+	val, err := strconv.Atoi(fmt.Sprintf("%v", c.Get(key)))
+	if err != nil {
+		panic(fmt.Sprintf("err get int: %v", err))
+	}
+	return val
 }
 
 func getString(c echo.Context, key string) string {

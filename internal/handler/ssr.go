@@ -21,7 +21,7 @@ func (h *Handler) Index(c echo.Context) error {
 }
 
 func (h *Handler) GetTasks(c echo.Context) error {
-	userID := getString(c, "user_id")
+	userID := mustGetInt(c, "user_id")
 	resp, err := h.Service.GetTasks(userID)
 	if err != nil {
 		return renderMessage(c, "Ошибка загрузки заданий: "+err.Error(), true)
@@ -30,31 +30,76 @@ func (h *Handler) GetTasks(c echo.Context) error {
 }
 
 func (h *Handler) GetCreateTask(c echo.Context) error {
-	data, _ := h.Service.GetCreateTask()
+	userID := mustGetInt(c, "user_id")
+	data, _ := h.Service.GetCreateTask(userID)
 	return c.Render(http.StatusOK, "edit_task.html", data)
 }
 
 func (h *Handler) GetAttemptTask(c echo.Context) error {
 	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	taskID, err := strconv.Atoi(idStr)
 	if err != nil {
 		return renderMessage(c, "Некорректный id задания: "+err.Error(), true)
 	}
-	data, _ := h.Service.GetAttemptTask(id)
+	userID := mustGetInt(c, "user_id")
+	data, err := h.Service.GetAttemptTask(taskID, userID)
+	if err != nil {
+		return renderMessage(c, "Ошибка формирования страницы: "+err.Error(), true)
+	}
 	return c.Render(http.StatusOK, "upload_attempt.html", data)
 }
 
 func (h *Handler) GetEditTask(c echo.Context) error {
 	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	taskID, err := strconv.Atoi(idStr)
 	if err != nil {
 		return renderMessage(c, "Некорректный id задания: "+err.Error(), true)
 	}
-	response, err := h.Service.GetEditTask(id)
+	userID := mustGetInt(c, "user_id")
+	response, err := h.Service.GetEditTask(taskID, userID)
 	if err != nil {
 		return renderMessage(c, "Ошибка: "+err.Error(), true)
 	}
 	return c.Render(http.StatusOK, "edit_task.html", response)
+}
+
+func (h *Handler) GetAttempts(c echo.Context) error {
+	userID := mustGetInt(c, "user_id")
+	resp, err := h.Service.GetAttempts(userID)
+	if err != nil {
+		return renderMessage(c, "Ошибка загрузки решений: "+err.Error(), true)
+	}
+	return c.Render(http.StatusOK, "attempts.html", resp)
+}
+
+func (h *Handler) GetAttempt(c echo.Context) error {
+	authorized := getBool(c, "authorized")
+	var role model.Role
+	if authorized {
+		role = model.Role(getString(c, "role"))
+	}
+	id := c.Param("id")
+	resp, err := h.Service.GetAttempt(id, authorized, string(role))
+	if err != nil {
+		return renderMessage(c, "Ошибка получения решения: "+err.Error(), true)
+	}
+	return c.Render(http.StatusOK, "attempt.html", resp)
+}
+
+func (h *Handler) GetAuth(c echo.Context) error {
+	authorized := getBool(c, "authorized")
+	if !authorized {
+		return c.Render(http.StatusOK, "auth.html", "")
+	}
+	return c.Redirect(302, "/")
+}
+
+func (h *Handler) GetReg(c echo.Context) error {
+	authorized := getBool(c, "authorized")
+	if !authorized {
+		return c.Render(http.StatusOK, "reg.html", "")
+	}
+	return c.Redirect(302, "/")
 }
 
 func (h *Handler) PostCreateTask(c echo.Context) error {
@@ -66,9 +111,10 @@ func (h *Handler) PostCreateTask(c echo.Context) error {
 	if err = req.IsValid(); err != nil {
 		return renderMessage(c, "Некорректный запрос: "+err.Error(), true)
 	}
-	userIDStr := getString(c, "user_id")
-	userID, _ := strconv.Atoi(userIDStr)
-	req.CreatorID = userID
+	userID := mustGetInt(c, "user_id")
+	if req.CreatorID != userID {
+		return renderMessage(c, "Некорректный UserID", true)
+	}
 	err = h.Service.CreateTask(req)
 	if err != nil {
 		return renderMessage(c, "Не удалось создать задание: "+err.Error(), true)
@@ -91,9 +137,10 @@ func (h *Handler) PostEditTask(c echo.Context) error {
 		return renderMessage(c, "Некорректный запрос: "+err.Error(), true)
 	}
 	req.ID = id
-	userIDStr := getString(c, "user_id")
-	userID, _ := strconv.Atoi(userIDStr)
-	req.CreatorID = userID
+	userID := mustGetInt(c, "user_id")
+	if req.CreatorID != userID {
+		return renderMessage(c, "Некорректный UserID", true)
+	}
 	err = h.Service.EditTask(req)
 	if err != nil {
 		return renderMessage(c, "Не удалось изменить задание: "+err.Error(), true)
@@ -103,58 +150,45 @@ func (h *Handler) PostEditTask(c echo.Context) error {
 
 func (h *Handler) DeleteTask(c echo.Context) error {
 	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	taskID, err := strconv.Atoi(idStr)
 	if err != nil {
 		return renderMessage(c, "Некорректный id задания: "+err.Error(), true)
 	}
-	err = h.Service.DeleteTask(id)
+	userID := mustGetInt(c, "user_id")
+	err = h.Service.DeleteTask(taskID, userID)
 	if err != nil {
 		return renderMessage(c, "Ошибка удаления задания: "+err.Error(), true)
 	}
 	return c.Redirect(302, "/tasks")
 }
 
-func (h *Handler) GetAttempts(c echo.Context) error {
-	userID := fmt.Sprintf("%v", c.Get("user_id"))
-	resp, err := h.Service.GetAttempts(userID)
+func (h *Handler) PostAttempt(c echo.Context) error {
+	var req model.AttemptRequest
+	err := c.Bind(&req)
 	if err != nil {
-		return renderMessage(c, "Ошибка загрузки решений: "+err.Error(), true)
+		return renderMessage(c, "Ошибка формы: "+err.Error(), true)
 	}
-	return c.Render(http.StatusOK, "attempts.html", resp)
-}
-
-func (h *Handler) GetAttempt(c echo.Context) error {
-	authorized := getBool(c, "authorized")
-	var role model.Role
-	if authorized {
-		role = model.Role(getString(c, "role"))
+	if err = req.IsValid(); err != nil {
+		return renderMessage(c, "Некорректный запрос: "+err.Error(), true)
 	}
-	id := c.Param("id")
-	resp, err := h.Service.GetAttempt(id, authorized, string(role))
+	userID := mustGetInt(c, "user_id")
+	if req.CreatorID != userID {
+		return renderMessage(c, "Некорректный UserID", true)
+	}
+	file, err := c.FormFile("source")
 	if err != nil {
-		return renderMessage(c, "Ошибка получения решения: "+err.Error(), true)
+		return renderMessage(c, "Ошибка чтения файла: "+err.Error(), true)
 	}
-	return c.Render(http.StatusOK, "attempt.html", resp)
+	src, err := file.Open()
+	if err != nil {
+		return renderMessage(c, "Ошибка открытия файла: "+err.Error(), true)
+	}
+	defer src.Close()
+	return renderMessage(c, "success1", false)
 }
 
 func (h *Handler) Logout(c echo.Context) error {
 	removeCookie(c, "auth")
-	return c.Redirect(302, "/")
-}
-
-func (h *Handler) GetAuth(c echo.Context) error {
-	authorized := getBool(c, "authorized")
-	if !authorized {
-		return c.Render(http.StatusOK, "auth.html", "")
-	}
-	return c.Redirect(302, "/")
-}
-
-func (h *Handler) GetReg(c echo.Context) error {
-	authorized := getBool(c, "authorized")
-	if !authorized {
-		return c.Render(http.StatusOK, "reg.html", "")
-	}
 	return c.Redirect(302, "/")
 }
 

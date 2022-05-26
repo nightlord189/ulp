@@ -31,6 +31,7 @@ type TemplateAttempt struct {
 }
 
 type TemplateEditTask struct {
+	UserID           int
 	IsEdit           bool
 	ID               int
 	Name             string
@@ -55,6 +56,7 @@ func (t *TemplateEditTask) Fill(task TaskDB) {
 }
 
 type TemplateUploadAttempt struct {
+	UserID          int
 	TaskID          int
 	TaskName        string
 	TaskDescription string
