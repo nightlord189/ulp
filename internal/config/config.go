@@ -10,6 +10,7 @@ type Config struct {
 	HttpPort      int
 	HttpDebug     bool
 	TemplatesPath string
+	AttemptsPath  string
 	DB            struct {
 		Host     string
 		Port     int
@@ -37,7 +38,7 @@ func Load(path string) *Config {
 	decoder := json.NewDecoder(file)
 	err2 := decoder.Decode(&config)
 	if err2 != nil {
-		panic("load config error: " + err2.Error())
+		panic("parse config error: " + err2.Error())
 	}
 	return &config
 }

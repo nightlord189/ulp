@@ -9,12 +9,20 @@ import (
 	"github.com/nightlord189/ulp/internal/handler"
 	"github.com/nightlord189/ulp/internal/service"
 	"net/http"
+	"os"
 )
 
 func main() {
 	fmt.Println("start")
 
 	cfg := config.Load("configs/config.json")
+
+	if _, err := os.Stat(cfg.AttemptsPath); os.IsNotExist(err) {
+		if err := os.Mkdir(cfg.AttemptsPath, os.ModePerm); err != nil {
+			panic(fmt.Sprintf("error create attempts directory: %v", err))
+		}
+	}
+
 	dbInstance, err := db.InitDb(cfg)
 	if err != nil {
 		panic(fmt.Sprintf("error init db: %v", err))

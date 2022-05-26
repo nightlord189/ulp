@@ -183,7 +183,17 @@ func (h *Handler) PostAttempt(c echo.Context) error {
 	if err != nil {
 		return renderMessage(c, "Ошибка открытия файла: "+err.Error(), true)
 	}
-	defer src.Close()
+	defer func() {
+		err := src.Close()
+		if err != nil {
+			fmt.Println("err on close file from form:", err)
+		}
+	}()
+
+	err = h.Service.CreateAttempt(req, file, &src)
+	if err != nil {
+		return renderMessage(c, "Ошибка проведения теста: "+err.Error(), true)
+	}
 	return renderMessage(c, "success1", false)
 }
 

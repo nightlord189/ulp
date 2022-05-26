@@ -2,6 +2,7 @@
   "HttpPort": 8080,
   "HttpDebug": true,
   "TemplatesPath": "web/templates/*.html",
+  "AttemptsPath": "attempt",
   "Db": {
     "Host": "localhost",
     "Port": 5432,
