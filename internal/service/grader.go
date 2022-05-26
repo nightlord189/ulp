@@ -2,10 +2,17 @@ package service
 
 import (
 	"archive/zip"
+	"bufio"
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/archive"
 	"github.com/nightlord189/ulp/internal/model"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"os"
 	"path"
@@ -37,44 +44,133 @@ func (s *Service) CreateAttempt(req model.AttemptRequest, file *multipart.FileHe
 			fmt.Println("error update attempt")
 		}
 	}()
-	err = s.createAttemptFiles(&attempt, file, fileSrc)
+	attemptDir, err := s.createAttemptFiles(&attempt, file, fileSrc)
 	if err != nil {
 		return fmt.Errorf("err write files to server's filesystem: %w", err)
+	}
+	err = createDockerfile(attemptDir, task.Dockerfile)
+	if err != nil {
+		return fmt.Errorf("err write dockerfile: %w", err)
+	}
+	err = buildAndRun(task, &attempt, attemptDir, attempt.ID)
+	if err != nil {
+		return fmt.Errorf("err build and run: %w", err)
+	}
+	// TODO: create container
+	// TODO: exec or make web-request to container
+	// TODO: stop container and remove image
+	return nil
+}
+
+func buildAndRun(task model.TaskDB, attempt *model.AttemptDB, attemptDir string, attemptID int) error {
+	ctx := context.Background()
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		return fmt.Errorf("error create docker-client: %w", err)
+	}
+	err = build(ctx, cli, attemptDir, attemptID)
+	if err != nil {
+		attempt.Log += "docker build failed\n"
+		return fmt.Errorf("error build image: %w", err)
+	}
+	attempt.Log += "docker build succeed\n"
+	return nil
+}
+
+func build(ctx context.Context, cli *client.Client, attemptDir string, attemptID int) error {
+	dirPath := fmt.Sprintf("%s/", attemptDir)
+	tar, err := archive.TarWithOptions(dirPath, &archive.TarOptions{})
+	if err != nil {
+		return fmt.Errorf("error on create tar-archive: %w", err)
+	}
+	opts := types.ImageBuildOptions{
+		Dockerfile: "Dockerfile",
+		Tags:       []string{fmt.Sprintf("ulp/grader/%d", attemptID)},
+		Remove:     true,
+	}
+	res, err := cli.ImageBuild(ctx, tar, opts)
+	if err != nil {
+		return fmt.Errorf("error on build image: %w", err)
+	}
+	defer func() {
+		err := res.Body.Close()
+		if err != nil {
+			fmt.Println("err on close body of build response:", err)
+		}
+	}()
+	err = print(res.Body)
+	if err != nil {
+		return fmt.Errorf("error on reading response from docker build: %w", err)
 	}
 	return nil
 }
 
-func (s *Service) createAttemptFiles(attempt *model.AttemptDB, file *multipart.FileHeader, fileSrc *multipart.File) error {
+type ErrorLine struct {
+	Error       string      `json:"error"`
+	ErrorDetail ErrorDetail `json:"errorDetail"`
+}
+
+type ErrorDetail struct {
+	Message string `json:"message"`
+}
+
+func print(rd io.Reader) error {
+	var lastLine string
+
+	scanner := bufio.NewScanner(rd)
+	for scanner.Scan() {
+		lastLine = scanner.Text()
+		fmt.Println(scanner.Text())
+	}
+
+	errLine := &ErrorLine{}
+	json.Unmarshal([]byte(lastLine), errLine)
+	if errLine.Error != "" {
+		return errors.New(errLine.Error)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createDockerfile(dirPath, content string) error {
+	fpath := path.Join(dirPath, "Dockerfile")
+	return ioutil.WriteFile(fpath, []byte(content), 0644)
+}
+
+func (s *Service) createAttemptFiles(attempt *model.AttemptDB, file *multipart.FileHeader, fileSrc *multipart.File) (string, error) {
 	attemptDirPath := path.Join(s.Config.AttemptsPath, fmt.Sprintf("%d", attempt.ID))
 	fmt.Println(attemptDirPath)
 	if err := os.Mkdir(attemptDirPath, os.ModePerm); err != nil {
 		attempt.Log += "error on creating attempt directory\n"
-		return fmt.Errorf("error create attempt directory: %w", err)
+		return attemptDirPath, fmt.Errorf("error create attempt directory: %w", err)
 	}
 	attemptFilePath := path.Join(attemptDirPath, file.Filename)
 	dst, err := os.Create(attemptFilePath)
 	if err != nil {
 		attempt.Log += "error on creating attempt file\n"
-		return fmt.Errorf("error on create file path: %w", err)
+		return attemptDirPath, fmt.Errorf("error on create file path: %w", err)
 	}
 	if _, err = io.Copy(dst, *fileSrc); err != nil {
 		attempt.Log += "error on copy file from src\n"
-		return fmt.Errorf("error on copy file from src: %w", err)
+		return attemptDirPath, fmt.Errorf("error on copy file from src: %w", err)
 	}
-	// TODO: zip files
 	extension := filepath.Ext(file.Filename)
 	if extension == ".zip" {
 		err = unzipFile(attemptFilePath, attemptDirPath)
 		if err != nil {
-			return fmt.Errorf("error on unzipping archive: %w", err)
+			return attemptDirPath, fmt.Errorf("error on unzipping archive: %w", err)
 		}
 		err = os.Remove(attemptFilePath)
 		if err != nil {
-			return fmt.Errorf("error on delete unzipped archive: %w", err)
+			return attemptDirPath, fmt.Errorf("error on delete unzipped archive: %w", err)
 		}
 	}
 	attempt.Log += "files created\n"
-	return nil
+	return attemptDirPath, nil
 }
 
 func unzipFile(src, dst string) error {
