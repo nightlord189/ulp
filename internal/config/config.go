@@ -7,11 +7,12 @@ import (
 
 //Config - конфиг
 type Config struct {
-	HttpPort      int
-	HttpDebug     bool
-	TemplatesPath string
-	AttemptsPath  string
-	DB            struct {
+	HttpPort        int
+	HttpDebug       bool
+	TemplatesPath   string
+	AttemptsPath    string
+	RunTestsTimeout int
+	DB              struct {
 		Host     string
 		Port     int
 		Name     string

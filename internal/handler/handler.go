@@ -45,8 +45,9 @@ func (h *Handler) Render(w io.Writer, name string, data interface{}, c echo.Cont
 
 func renderMessage(c echo.Context, message string, isError bool) error {
 	authorized := getBool(c, "authorized")
+	username := getString(c, "username")
 	role := getString(c, "role")
-	tmpl := model.NewTmplMessage(message, isError, authorized, role)
+	tmpl := model.NewTmplMessage(message, isError, authorized, username, role)
 	return c.Render(http.StatusBadRequest, "message.html", tmpl)
 }
 
@@ -73,6 +74,14 @@ func mustGetInt(c echo.Context, key string) int {
 
 func getString(c echo.Context, key string) string {
 	return fmt.Sprintf("%v", c.Get(key))
+}
+
+func getUserInfo(c echo.Context) model.TemplateUserInfo {
+	return model.TemplateUserInfo{
+		IsAuthorized: getBool(c, "authorized"),
+		Username:     getString(c, "username"),
+		Role:         getString(c, "role"),
+	}
 }
 
 func removeCookie(c echo.Context, name string) {

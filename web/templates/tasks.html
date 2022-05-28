@@ -27,6 +27,9 @@
                 </li>
             </ul>
         </div>
+
+        <span class="mr-2">{{.UserInfo.Username}}</span>
+        <span class="text-muted">{{.UserInfo.Role}}</span>
         <div class="nav-item">
             <a class="nav-link" href="/logout">Выйти</a>
         </div>
@@ -41,6 +44,7 @@
                     <thead>
                     <tr>
                         <th scope="col">#</th>
+                        <th scope="col">ID</th>
                         <th scope="col">Название</th>
                         <th scope="col">Тип</th>
                         <th scope="col">Дата изменения</th>
@@ -51,6 +55,7 @@
                     {{range .Tasks}}
                     <tr>
                         <th scope="row">{{.Order}}</th>
+                        <td>{{.ID}}</td>
                         <td>{{.Name}}</td>
                         <td>{{.Type}}</td>
                         <td>{{.UpdatedAt}}</td>

@@ -27,6 +27,9 @@
                 </li>
             </ul>
         </div>
+
+        <span class="mr-2">{{.UserInfo.Username}}</span>
+        <span class="text-muted">{{.UserInfo.Role}}</span>
         <div class="nav-item">
             <a class="nav-link" href="/logout">Выйти</a>
         </div>
@@ -40,6 +43,7 @@
                     <thead>
                     <tr>
                         <th scope="col">#</th>
+                        <th scope="col">ID</th>
                         <th scope="col">Название задания</th>
                         <th scope="col">Ссылка на задание</th>
                         <th scope="col">Дата сдачи</th>
@@ -51,6 +55,7 @@
                     {{range .Attempts}}
                     <tr>
                         <th scope="row">{{.Order}}</th>
+                        <td>{{.ID}}</td>
                         <td>{{.TaskName}}</td>
                         <td><a href="/task/{{.TaskID}}/attempt">Ссылка</a></td>
                         <td>{{.CreatedAtFormat}}</td>

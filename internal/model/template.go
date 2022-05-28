@@ -1,36 +1,46 @@
 package model
 
-type TemplateMessage struct {
-	Message      string
-	IsError      bool
+type TemplateUserInfo struct {
 	IsAuthorized bool
+	Username     string
 	Role         string
 }
 
-func NewTmplMessage(message string, isError bool, isAuthorized bool, role string) TemplateMessage {
+type TemplateMessage struct {
+	UserInfo TemplateUserInfo
+	Message  string
+	IsError  bool
+}
+
+func NewTmplMessage(message string, isError bool, isAuthorized bool, username, role string) TemplateMessage {
 	return TemplateMessage{
-		Message:      message,
-		IsError:      isError,
-		IsAuthorized: isAuthorized,
-		Role:         role,
+		Message: message,
+		IsError: isError,
+		UserInfo: TemplateUserInfo{
+			IsAuthorized: isAuthorized,
+			Username:     username,
+			Role:         role,
+		},
 	}
 }
 
 type TemplateTasks struct {
-	Tasks []TaskView
+	UserInfo TemplateUserInfo
+	Tasks    []TaskView
 }
 
 type TemplateAttempts struct {
+	UserInfo TemplateUserInfo
 	Attempts []AttemptView
 }
 
 type TemplateAttempt struct {
-	IsAuthorized bool
-	Role         string
-	Attempt      AttemptView
+	UserInfo TemplateUserInfo
+	Attempt  AttemptView
 }
 
 type TemplateEditTask struct {
+	UserInfo         TemplateUserInfo
 	UserID           int
 	IsEdit           bool
 	ID               int
@@ -38,7 +48,7 @@ type TemplateEditTask struct {
 	Description      string
 	TaskType         string
 	Dockerfile       string
-	TestCaseType     string
+	TestCaseType     TestCaseType
 	TestCaseURL      string
 	TestCaseInput    string
 	TestCaseExpected string
@@ -58,6 +68,7 @@ func (t *TemplateEditTask) Fill(task TaskDB) {
 }
 
 type TemplateUploadAttempt struct {
+	UserInfo        TemplateUserInfo
 	UserID          int
 	TaskID          int
 	TaskName        string

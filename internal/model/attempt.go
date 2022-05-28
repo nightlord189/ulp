@@ -17,7 +17,7 @@ type AttemptDB struct {
 	TaskID      int          `json:"taskId" gorm:"column:task_id"`
 	State       AttemptState `json:"state" gorm:"column:state"`
 	Log         string       `json:"log" gorm:"column:log"`
-	RunningTime int          `json:"runningTime" gorm:"column:running_time"`
+	RunningTime int64        `json:"runningTime" gorm:"column:running_time"`
 	CreatorID   int          `json:"creatorID" gorm:"column:creator_id"`
 	CreatedAt   time.Time    `json:"createdAt"`
 }

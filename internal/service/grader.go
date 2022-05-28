@@ -24,22 +24,22 @@ import (
 	"time"
 )
 
-func (s *Service) CreateAttempt(req model.AttemptRequest, file *multipart.FileHeader, fileSrc *multipart.File) error {
+func (s *Service) CreateAttempt(req model.AttemptRequest, file *multipart.FileHeader, fileSrc *multipart.File) (*model.AttemptDB, error) {
 	var task model.TaskDB
 	err := s.DB.GetEntityByField("id", strconv.Itoa(req.TaskID), &task)
 	if err != nil {
-		return fmt.Errorf("err get task from db: %w", err)
+		return nil, fmt.Errorf("err get task from db: %w", err)
 	}
 	attempt := model.AttemptDB{
 		TaskID:      req.TaskID,
-		State:       "fail",
+		State:       model.AttemptStateFail,
 		Log:         "creating entity in db\n",
 		RunningTime: 0,
 		CreatorID:   req.CreatorID,
 	}
 	err = s.DB.CreateEntity(&attempt)
 	if err != nil {
-		return fmt.Errorf("err create attempt in db: %w", err)
+		return &attempt, fmt.Errorf("err create attempt in db: %w", err)
 	}
 	defer func() {
 		err = s.DB.UpdateEntity(&attempt)
@@ -49,22 +49,21 @@ func (s *Service) CreateAttempt(req model.AttemptRequest, file *multipart.FileHe
 	}()
 	attemptDir, err := s.createAttemptFiles(&attempt, file, fileSrc)
 	if err != nil {
-		return fmt.Errorf("err write files to server's filesystem: %w", err)
+		return &attempt, fmt.Errorf("err write files to server's filesystem: %w", err)
 	}
 	err = createDockerfile(attemptDir, task.Dockerfile)
 	if err != nil {
-		return fmt.Errorf("err write dockerfile: %w", err)
+		return &attempt, fmt.Errorf("err write dockerfile: %w", err)
 	}
-	err = buildAndRun(task, &attempt, attemptDir)
+	err = s.buildAndRun(task, &attempt, attemptDir)
 	if err != nil {
-		return fmt.Errorf("err build and run: %w", err)
+		return &attempt, fmt.Errorf("err build and run: %w", err)
 	}
-	// TODO: create container
-	// TODO: exec or make web-request to container
-	return nil
+	// TODO: make web-request to container
+	return &attempt, err
 }
 
-func buildAndRun(task model.TaskDB, attempt *model.AttemptDB, attemptDir string) error {
+func (s *Service) buildAndRun(task model.TaskDB, attempt *model.AttemptDB, attemptDir string) error {
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	if err != nil {
@@ -83,7 +82,7 @@ func buildAndRun(task model.TaskDB, attempt *model.AttemptDB, attemptDir string)
 	}
 	defer removeImage(ctx, cli, attempt)
 	attempt.Log += "docker build succeed\n"
-	err = run(ctx, cli, attempt)
+	err = s.run(ctx, cli, task, attempt)
 	if err != nil {
 		attempt.Log += "run failed\n"
 		return fmt.Errorf("error run image: %w", err)
@@ -100,7 +99,121 @@ func removeImage(ctx context.Context, cli *client.Client, attempt *model.Attempt
 	attempt.Log += "image removed\n"
 }
 
-func run(ctx context.Context, cli *client.Client, attempt *model.AttemptDB) error {
+func (s *Service) runTests(ctx context.Context, cli *client.Client, task model.TaskDB, attempt *model.AttemptDB, containerCreateID string, start time.Time) error {
+	attempt.Log += "running tests\n"
+	if task.Type == model.TaskTypeConsole {
+		return s.runTestConsole(ctx, cli, task, attempt, containerCreateID, start)
+	} else {
+		return fmt.Errorf("unknown task type %s", task.Type)
+	}
+}
+
+func (s *Service) runTestConsole(ctx context.Context, cli *client.Client, task model.TaskDB, attempt *model.AttemptDB, containerCreateID string, start time.Time) error {
+	c := types.ExecConfig{
+		User:         "",
+		Privileged:   false,
+		Tty:          true,
+		AttachStdin:  true,
+		AttachStdout: true,
+		AttachStderr: true,
+		Detach:       false,
+		DetachKeys:   "",
+		Env:          nil,
+		WorkingDir:   "",
+		Cmd:          []string{"./main"},
+	}
+	execID, err := cli.ContainerExecCreate(ctx, containerCreateID, c)
+	if err != nil {
+		return fmt.Errorf("error create exec: %w", err)
+	}
+	fmt.Println("exec created", execID, err, containerCreateID)
+
+	config := types.ExecStartCheck{
+		Detach: false,
+		Tty:    true,
+	}
+	conn, err := cli.ContainerExecAttach(ctx, execID.ID, config)
+	if err != nil {
+		return fmt.Errorf("error container exec attach: %w", err)
+	}
+	defer conn.Close()
+
+	err = cli.ContainerExecStart(ctx, execID.ID, config)
+	if err != nil {
+		return fmt.Errorf("error container exec start: %w", err)
+	}
+
+	type runResult struct {
+		Err error
+	}
+
+	runCh := make(chan runResult)
+
+	go func() {
+		result := runResult{}
+
+		content, _, _ := conn.Reader.ReadLine()
+		fmt.Println("read1", string(content))
+		attempt.Log += fmt.Sprintf("read from exec: %s\n", string(content))
+
+		fmt.Println("writing", task.TestcaseInput)
+		attempt.Log += fmt.Sprintf("writing to exec: %s\n", task.TestcaseInput)
+		_, err = conn.Conn.Write([]byte(fmt.Sprintf("%s\n", task.TestcaseInput)))
+		if err != nil {
+			result.Err = fmt.Errorf("write input: %w", err)
+			runCh <- result
+			return
+		}
+		content, _, _ = conn.Reader.ReadLine()
+		fmt.Println("read2", string(content))
+		//attempt.Log += fmt.Sprintf("read from exec: %s\n", string(content))
+
+		content, _, _ = conn.Reader.ReadLine()
+		fmt.Println("read3", string(content))
+		attempt.Log += fmt.Sprintf("read from exec: %s\n", string(content))
+
+		contentStr := string(content)
+		switch task.TestcaseType {
+		case model.TestCaseTypeContains:
+			if strings.Contains(contentStr, task.TestcaseExpected) {
+				attempt.State = model.AttemptStateSuccess
+				attempt.Log += fmt.Sprintf("console output \"%s\" contains expected value\n", contentStr)
+			} else {
+				attempt.State = model.AttemptStateFail
+				attempt.Log += fmt.Sprintf("console output \"%s\" doesn't contain expected value\n", contentStr)
+			}
+			break
+		case model.TestCaseTypeEqual:
+			if strings.EqualFold(contentStr, task.TestcaseExpected) {
+				attempt.State = model.AttemptStateSuccess
+				attempt.Log += fmt.Sprintf("console output \"%s\" equals expected value\n", contentStr)
+			} else {
+				attempt.State = model.AttemptStateFail
+				attempt.Log += fmt.Sprintf("console output \"%s\" doesn't equal expected value\n", contentStr)
+			}
+			break
+		}
+		duration := time.Since(start)
+		attempt.RunningTime = int64(duration.Seconds())
+		runCh <- result
+	}()
+
+	select {
+	case result := <-runCh:
+		fmt.Println("exec ran, cancelling timeout")
+		if result.Err != nil {
+			return result.Err
+		}
+	case <-time.After(time.Duration(s.Config.RunTestsTimeout) * time.Second):
+		fmt.Println("timeout on exec", s.Config.RunTestsTimeout)
+		attempt.Log += fmt.Sprintf("timeout %d on exec\n", s.Config.RunTestsTimeout)
+		return errors.New("timeout on exec")
+	}
+
+	return nil
+}
+
+func (s *Service) run(ctx context.Context, cli *client.Client, task model.TaskDB, attempt *model.AttemptDB) error {
 	containerName := fmt.Sprintf("grader%d", attempt.ID)
 	imageName := fmt.Sprintf("ulp/grader/%d:latest", attempt.ID)
 
@@ -126,6 +239,7 @@ func run(ctx context.Context, cli *client.Client, attempt *model.AttemptDB) erro
 		attempt.Log += "docker container removed\n"
 	}()
 
+	start := time.Now()
 	if err := cli.ContainerStart(ctx, resp.ID,
 		types.ContainerStartOptions{
 			CheckpointID:  "",
@@ -149,7 +263,10 @@ func run(ctx context.Context, cli *client.Client, attempt *model.AttemptDB) erro
 	time.Sleep(3 * time.Second)
 	fmt.Println("after 3 seconds")
 	attempt.Log += "docker container started\n"
-
+	err = s.runTests(ctx, cli, task, attempt, resp.ID, start)
+	if err != nil {
+		return fmt.Errorf("error run tests on container: %w", err)
+	}
 	return nil
 }
 

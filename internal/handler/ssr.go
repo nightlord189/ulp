@@ -22,7 +22,7 @@ func (h *Handler) Index(c echo.Context) error {
 
 func (h *Handler) GetTasks(c echo.Context) error {
 	userID := mustGetInt(c, "user_id")
-	resp, err := h.Service.GetTasks(userID)
+	resp, err := h.Service.GetTasks(userID, getUserInfo(c))
 	if err != nil {
 		return renderMessage(c, "Ошибка загрузки заданий: "+err.Error(), true)
 	}
@@ -31,7 +31,7 @@ func (h *Handler) GetTasks(c echo.Context) error {
 
 func (h *Handler) GetCreateTask(c echo.Context) error {
 	userID := mustGetInt(c, "user_id")
-	data, _ := h.Service.GetCreateTask(userID)
+	data, _ := h.Service.GetCreateTask(userID, getUserInfo(c))
 	return c.Render(http.StatusOK, "edit_task.html", data)
 }
 
@@ -42,7 +42,7 @@ func (h *Handler) GetAttemptTask(c echo.Context) error {
 		return renderMessage(c, "Некорректный id задания: "+err.Error(), true)
 	}
 	userID := mustGetInt(c, "user_id")
-	data, err := h.Service.GetAttemptTask(taskID, userID)
+	data, err := h.Service.GetAttemptTask(taskID, userID, getUserInfo(c))
 	if err != nil {
 		return renderMessage(c, "Ошибка формирования страницы: "+err.Error(), true)
 	}
@@ -56,7 +56,7 @@ func (h *Handler) GetEditTask(c echo.Context) error {
 		return renderMessage(c, "Некорректный id задания: "+err.Error(), true)
 	}
 	userID := mustGetInt(c, "user_id")
-	response, err := h.Service.GetEditTask(taskID, userID)
+	response, err := h.Service.GetEditTask(taskID, userID, getUserInfo(c))
 	if err != nil {
 		return renderMessage(c, "Ошибка: "+err.Error(), true)
 	}
@@ -65,7 +65,7 @@ func (h *Handler) GetEditTask(c echo.Context) error {
 
 func (h *Handler) GetAttempts(c echo.Context) error {
 	userID := mustGetInt(c, "user_id")
-	resp, err := h.Service.GetAttempts(userID)
+	resp, err := h.Service.GetAttempts(userID, getUserInfo(c))
 	if err != nil {
 		return renderMessage(c, "Ошибка загрузки решений: "+err.Error(), true)
 	}
@@ -73,13 +73,8 @@ func (h *Handler) GetAttempts(c echo.Context) error {
 }
 
 func (h *Handler) GetAttempt(c echo.Context) error {
-	authorized := getBool(c, "authorized")
-	var role model.Role
-	if authorized {
-		role = model.Role(getString(c, "role"))
-	}
 	id := c.Param("id")
-	resp, err := h.Service.GetAttempt(id, authorized, string(role))
+	resp, err := h.Service.GetAttempt(id, getUserInfo(c))
 	if err != nil {
 		return renderMessage(c, "Ошибка получения решения: "+err.Error(), true)
 	}
@@ -190,11 +185,11 @@ func (h *Handler) PostAttempt(c echo.Context) error {
 		}
 	}()
 
-	err = h.Service.CreateAttempt(req, file, &src)
+	attempt, err := h.Service.CreateAttempt(req, file, &src)
 	if err != nil {
 		return renderMessage(c, "Ошибка проведения теста: "+err.Error(), true)
 	}
-	return renderMessage(c, "success1", false)
+	return c.Redirect(302, fmt.Sprintf("/attempt/%d", attempt.ID))
 }
 
 func (h *Handler) Logout(c echo.Context) error {

@@ -3,6 +3,7 @@
   "HttpDebug": true,
   "TemplatesPath": "web/templates/*.html",
   "AttemptsPath": "attempt",
+  "RunTestsTimeout": 30,
   "Db": {
     "Host": "localhost",
     "Port": 5432,

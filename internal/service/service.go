@@ -61,32 +61,34 @@ func (s *Service) Reg(req model.RegRequest) error {
 	return nil
 }
 
-func (s *Service) GetTasks(userID int) (model.TemplateTasks, error) {
-	tasks := make([]model.TaskDB, 0)
-	err := s.DB.GetEntitiesByField("creator_id", strconv.Itoa(userID), &tasks)
+func (s *Service) GetTasks(userID int, userInfo model.TemplateUserInfo) (model.TemplateTasks, error) {
+	tasks, err := s.DB.GetTasksByCreatorID(userID)
 	taskViews := make([]model.TaskView, len(tasks))
 	for i := range tasks {
 		taskViews[i] = tasks[i].ToView()
 		taskViews[i].Order = i + 1
 	}
 	return model.TemplateTasks{
-		Tasks: taskViews,
+		Tasks:    taskViews,
+		UserInfo: userInfo,
 	}, err
 }
 
-func (s *Service) GetCreateTask(userID int) (model.TemplateEditTask, error) {
+func (s *Service) GetCreateTask(userID int, userInfo model.TemplateUserInfo) (model.TemplateEditTask, error) {
 	dockerfiles := make([]model.DockerfileTemplateDB, 0)
 	err := s.DB.GetAllEntities(&dockerfiles)
 	return model.TemplateEditTask{
 		UserID:      userID,
 		Dockerfiles: dockerfiles,
+		UserInfo:    userInfo,
 	}, err
 }
 
-func (s *Service) GetEditTask(taskID, userID int) (model.TemplateEditTask, error) {
+func (s *Service) GetEditTask(taskID, userID int, userInfo model.TemplateUserInfo) (model.TemplateEditTask, error) {
 	result := model.TemplateEditTask{
-		UserID: userID,
-		IsEdit: true,
+		UserID:   userID,
+		IsEdit:   true,
+		UserInfo: userInfo,
 	}
 	dockerfiles := make([]model.DockerfileTemplateDB, 0)
 	err := s.DB.GetAllEntities(&dockerfiles)
@@ -103,9 +105,10 @@ func (s *Service) GetEditTask(taskID, userID int) (model.TemplateEditTask, error
 	return result, nil
 }
 
-func (s *Service) GetAttemptTask(taskID, userID int) (model.TemplateUploadAttempt, error) {
+func (s *Service) GetAttemptTask(taskID, userID int, userInfo model.TemplateUserInfo) (model.TemplateUploadAttempt, error) {
 	result := model.TemplateUploadAttempt{
-		UserID: userID,
+		UserID:   userID,
+		UserInfo: userInfo,
 	}
 	var task model.TaskDB
 	err := s.DB.GetEntityByField("id", strconv.Itoa(taskID), &task)
@@ -159,7 +162,7 @@ func (s *Service) DeleteTask(taskID, userID int) error {
 	return nil
 }
 
-func (s *Service) GetAttempts(userID int) (model.TemplateAttempts, error) {
+func (s *Service) GetAttempts(userID int, userInfo model.TemplateUserInfo) (model.TemplateAttempts, error) {
 	attempts, err := s.DB.GetAttemptsByStudentID(userID)
 	for i := range attempts {
 		attempts[i].Order = i + 1
@@ -167,6 +170,7 @@ func (s *Service) GetAttempts(userID int) (model.TemplateAttempts, error) {
 	}
 	return model.TemplateAttempts{
 		Attempts: attempts,
+		UserInfo: userInfo,
 	}, err
 }
 
@@ -176,12 +180,11 @@ func (s *Service) GetDockerfileTemplates() ([]model.DockerfileTemplateDB, error)
 	return entities, err
 }
 
-func (s *Service) GetAttempt(attemptID string, isAuthorized bool, role string) (model.TemplateAttempt, error) {
+func (s *Service) GetAttempt(attemptID string, userInfo model.TemplateUserInfo) (model.TemplateAttempt, error) {
 	attempt, err := s.DB.GetAttemptByID(attemptID)
 	attempt.CreatedAtFormat = attempt.CreatedAt.Format("2006-01-02 15:04:05")
 	return model.TemplateAttempt{
-		Attempt:      attempt,
-		IsAuthorized: isAuthorized,
-		Role:         role,
+		Attempt:  attempt,
+		UserInfo: userInfo,
 	}, err
 }
