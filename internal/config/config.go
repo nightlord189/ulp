@@ -12,6 +12,7 @@ type Config struct {
 	TemplatesPath   string
 	AttemptsPath    string
 	RunTestsTimeout int
+	TestPortStart   int
 	DB              struct {
 		Host     string
 		Port     int

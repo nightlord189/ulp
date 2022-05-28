@@ -4,6 +4,7 @@
   "TemplatesPath": "web/templates/*.html",
   "AttemptsPath": "attempt",
   "RunTestsTimeout": 30,
+  "TestPortStart": 10000,
   "Db": {
     "Host": "localhost",
     "Port": 5432,

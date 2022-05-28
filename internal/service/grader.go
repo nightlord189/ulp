@@ -11,11 +11,13 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
+	"github.com/docker/go-connections/nat"
 	"github.com/nightlord189/ulp/internal/model"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -23,6 +25,8 @@ import (
 	"strings"
 	"time"
 )
+
+const TestWebAppPort = 8080
 
 func (s *Service) CreateAttempt(req model.AttemptRequest, file *multipart.FileHeader, fileSrc *multipart.File) (*model.AttemptDB, error) {
 	var task model.TaskDB
@@ -99,13 +103,59 @@ func removeImage(ctx context.Context, cli *client.Client, attempt *model.Attempt
 	attempt.Log += "image removed\n"
 }
 
-func (s *Service) runTests(ctx context.Context, cli *client.Client, task model.TaskDB, attempt *model.AttemptDB, containerCreateID string, start time.Time) error {
+func (s *Service) runTests(
+	ctx context.Context, cli *client.Client, task model.TaskDB,
+	attempt *model.AttemptDB, containerCreateID string, port int, start time.Time) error {
 	attempt.Log += "running tests\n"
 	if task.Type == model.TaskTypeConsole {
 		return s.runTestConsole(ctx, cli, task, attempt, containerCreateID, start)
+	} else if task.Type == model.TaskTypeWebAPI || task.Type == model.TaskTypeHTML {
+		return s.runTestWeb(task, attempt, port, start)
 	} else {
 		return fmt.Errorf("unknown task type %s", task.Type)
 	}
+}
+
+func (s *Service) runTestWeb(task model.TaskDB, attempt *model.AttemptDB, port int, start time.Time) error {
+	url := fmt.Sprintf("http://localhost:%d%s", port, task.TestcaseURL)
+	httpClient := http.Client{
+		Timeout: time.Duration(s.Config.RunTestsTimeout) * time.Second,
+	}
+	resp, err := httpClient.Get(url)
+	if err != nil {
+		return fmt.Errorf("error on making web-request: %w", err)
+	}
+	fmt.Println("status of web-request to", url, resp.Status)
+	attempt.Log += fmt.Sprintf("web-request made to %s, status %s\n", url, resp.Status)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("error on read body: %w", err)
+	}
+	bodyStr := string(body)
+	fmt.Println("http response: ", bodyStr)
+	switch task.TestcaseType {
+	case model.TestCaseTypeContains:
+		if strings.Contains(bodyStr, task.TestcaseExpected) {
+			attempt.State = model.AttemptStateSuccess
+			attempt.Log += fmt.Sprintf("response \"%s\" contains expected value\n", bodyStr)
+		} else {
+			attempt.State = model.AttemptStateFail
+			attempt.Log += fmt.Sprintf("response \"%s\" doesn't contain expected value\n", bodyStr)
+		}
+		break
+	case model.TestCaseTypeEqual:
+		if strings.EqualFold(bodyStr, task.TestcaseExpected) {
+			attempt.State = model.AttemptStateSuccess
+			attempt.Log += fmt.Sprintf("response \"%s\" equals expected value\n", bodyStr)
+		} else {
+			attempt.State = model.AttemptStateFail
+			attempt.Log += fmt.Sprintf("response \"%s\" doesn't equal expected value\n", bodyStr)
+		}
+		break
+	}
+	duration := time.Since(start)
+	attempt.RunningTime = int64(duration.Seconds())
+	return nil
 }
 
 func (s *Service) runTestConsole(ctx context.Context, cli *client.Client, task model.TaskDB, attempt *model.AttemptDB, containerCreateID string, start time.Time) error {
@@ -217,11 +267,33 @@ func (s *Service) run(ctx context.Context, cli *client.Client, task model.TaskDB
 	containerName := fmt.Sprintf("grader%d", attempt.ID)
 	imageName := fmt.Sprintf("ulp/grader/%d:latest", attempt.ID)
 
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
+	createConfig := container.Config{
 		Image: imageName,
+		Tty:   true,
 		//Cmd:   []string{"cat", "/etc/hosts"},
-		Tty: true,
-	}, nil, nil, &specs.Platform{
+	}
+	var hostConfig *container.HostConfig
+	// for console apps we use 0, it's optional parameter
+	var hostPort int
+
+	if task.Type == model.TaskTypeWebAPI || task.Type == model.TaskTypeHTML {
+		appPort := fmt.Sprintf("%d/tcp", TestWebAppPort)
+		createConfig.ExposedPorts = nat.PortSet{nat.Port(appPort): struct{}{}}
+		hostPort = s.portManager.getAndLockPort()
+		hostConfig = &container.HostConfig{
+			PortBindings: nat.PortMap{
+				nat.Port(appPort): []nat.PortBinding{
+					{
+						HostIP:   "0.0.0.0",
+						HostPort: fmt.Sprintf("%d", hostPort),
+					},
+				},
+			},
+		}
+		defer s.portManager.freePort(hostPort)
+	}
+
+	resp, err := cli.ContainerCreate(ctx, &createConfig, hostConfig, nil, &specs.Platform{
 		OS:           "linux",
 		Architecture: "arm64",
 	}, containerName)
@@ -263,7 +335,7 @@ func (s *Service) run(ctx context.Context, cli *client.Client, task model.TaskDB
 	time.Sleep(3 * time.Second)
 	fmt.Println("after 3 seconds")
 	attempt.Log += "docker container started\n"
-	err = s.runTests(ctx, cli, task, attempt, resp.ID, start)
+	err = s.runTests(ctx, cli, task, attempt, resp.ID, hostPort, start)
 	if err != nil {
 		return fmt.Errorf("error run tests on container: %w", err)
 	}
