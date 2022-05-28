@@ -40,6 +40,7 @@ type TemplateEditTask struct {
 	Dockerfile       string
 	TestCaseType     string
 	TestCaseURL      string
+	TestCaseInput    string
 	TestCaseExpected string
 	Dockerfiles      []DockerfileTemplateDB
 }
@@ -52,6 +53,7 @@ func (t *TemplateEditTask) Fill(task TaskDB) {
 	t.Dockerfile = task.Dockerfile
 	t.TestCaseType = task.TestcaseType
 	t.TestCaseURL = task.TestcaseURL
+	t.TestCaseInput = task.TestcaseInput
 	t.TestCaseExpected = task.TestcaseExpected
 }
 

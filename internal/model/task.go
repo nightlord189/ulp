@@ -22,6 +22,7 @@ type TaskDB struct {
 	CreatorID        int       `json:"creatorID" gorm:"column:creator_id"`
 	TestcaseType     string    `json:"testCaseType" gorm:"column:testcase_type"`
 	TestcaseURL      string    `json:"testCaseURL" gorm:"column:testcase_url"`
+	TestcaseInput    string    `json:"testCaseInput" gorm:"column:testcase_input"`
 	TestcaseExpected string    `json:"testCaseExpected" gorm:"column:testcase_expected"`
 	UpdatedAt        time.Time `json:"updatedAt"`
 	CreatedAt        time.Time `json:"createdAt"`
@@ -77,6 +78,7 @@ func (t *TaskDB) Fill(req ChangeTaskRequest) {
 	} else {
 		t.TestcaseURL = ""
 	}
+	t.TestcaseInput = req.TestcaseInput
 	t.TestcaseExpected = req.TestcaseExpected
 }
 
@@ -89,6 +91,7 @@ type ChangeTaskRequest struct {
 	Dockerfile       string   `json:"dockerfile" binding:"required" form:"dockerfile"`
 	TestcaseType     string   `json:"testCaseType" binding:"required" form:"testCaseType"`
 	TestcaseURL      string   `json:"testCaseURL" form:"testCaseUrl"`
+	TestcaseInput    string   `json:"testCaseInput" form:"testcaseInput"`
 	TestcaseExpected string   `json:"testCaseExpected" binding:"required" form:"testCaseExpected"`
 }
 
