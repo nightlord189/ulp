@@ -174,19 +174,18 @@
         name: ulp
         image: nightlord189/ulp:latest
         pull: yes
-        ports:
-          - "8080:8080"
+        network_mode: host
         restart_policy: always
         restart: yes
         container_default_behavior: no_defaults
         state: started
         env:
-          DB_HOST: "172.17.0.1"
+          DB_HOST: "localhost"
           DB_PORT: "{{db_port}}"
           DB_USER: "postgres"
           DB_PASSWORD: "{{db_password}}"
           DB_NAME: "ulp"
-          TEST_HOST: "172.17.0.1"
+          TEST_HOST: "localhost"
           CONTAINER_ARCH: 'amd64'
         volumes:
           - /attempt:/attempt
