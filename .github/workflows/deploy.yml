@@ -37,7 +37,7 @@ jobs:
           sudo apt install ansible
         shell: bash
 
-      - name: setup ssh-key
+      - name: setup ssh-key1
         uses: DamianReeves/write-file-action
         with:
           path: .ssh/id_rsa
