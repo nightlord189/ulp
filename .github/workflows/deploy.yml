@@ -56,5 +56,5 @@ jobs:
           url: https://ulp.app
           follow-redirect: false
           max-attempts: 3
-          retry-delay: 5s
-          retry-all: false
+          retry-delay: 20s
+          retry-all: true
