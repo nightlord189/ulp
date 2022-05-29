@@ -35,6 +35,7 @@ func main() {
 	e.Debug = cfg.HttpDebug
 	e.Renderer = hlr
 
+	fmt.Println("server https:", cfg.Https)
 	if cfg.Https {
 		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
 	}
