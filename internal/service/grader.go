@@ -177,21 +177,6 @@ func (s *Service) runTestConsole(ctx context.Context, cli *client.Client, task m
 	}
 	fmt.Println("exec created", execID, err, containerCreateID)
 
-	config := types.ExecStartCheck{
-		Detach: false,
-		Tty:    true,
-	}
-	conn, err := cli.ContainerExecAttach(ctx, execID.ID, config)
-	if err != nil {
-		return fmt.Errorf("error container exec attach: %w", err)
-	}
-	defer conn.Close()
-
-	err = cli.ContainerExecStart(ctx, execID.ID, config)
-	if err != nil {
-		return fmt.Errorf("error container exec start: %w", err)
-	}
-
 	type runResult struct {
 		Err error
 	}
@@ -200,6 +185,25 @@ func (s *Service) runTestConsole(ctx context.Context, cli *client.Client, task m
 
 	go func() {
 		result := runResult{}
+
+		config := types.ExecStartCheck{
+			Detach: false,
+			Tty:    true,
+		}
+		conn, err := cli.ContainerExecAttach(ctx, execID.ID, config)
+		if err != nil {
+			result.Err = fmt.Errorf("error container exec attach: %w", err)
+			runCh <- result
+			return
+		}
+		defer conn.Close()
+
+		err = cli.ContainerExecStart(ctx, execID.ID, config)
+		if err != nil {
+			result.Err = fmt.Errorf("error container exec start: %w", err)
+			runCh <- result
+			return
+		}
 
 		content, _, _ := conn.Reader.ReadLine()
 		fmt.Println("read1", string(content))
