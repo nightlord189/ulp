@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	"github.com/nightlord189/ulp/internal/config"
 	"github.com/nightlord189/ulp/internal/model"
@@ -61,10 +62,26 @@ func autoMigrate(db *gorm.DB) error {
 		model.DockerfileTemplateDB{},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("err on automigrate gorm: %w", err)
 	}
 	db.Exec("ALTER TABLE tasks ADD CONSTRAINT tasks_fk FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE")
 	db.Exec("ALTER TABLE attempts ADD CONSTRAINT tasks_fk FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE SET NULL ON UPDATE CASCADE")
 	db.Exec("ALTER TABLE attempts ADD CONSTRAINT users_fk FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE")
+	err = insertData(db)
+	if err != nil {
+		return fmt.Errorf("err on automigrate data: %w", err)
+	}
+	return nil
+}
+
+func insertData(db *gorm.DB) error {
+	content, err := ioutil.ReadFile("scripts/dockerfile_templates.sql")
+	if err != nil {
+		return fmt.Errorf("error on read template file: %w", err)
+	}
+	err = db.Exec(string(content)).Error
+	if err != nil {
+		return fmt.Errorf("error on execute sql: %w", err)
+	}
 	return nil
 }

@@ -5,6 +5,7 @@
   "AttemptsPath": "attempt",
   "RunTestsTimeout": 30,
   "TestPortStart": 10000,
+  "TestHost": "localhost",
   "Db": {
     "Host": "localhost",
     "Port": 5432,

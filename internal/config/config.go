@@ -2,23 +2,25 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/kelseyhightower/envconfig"
 	"os"
 )
 
 //Config - конфиг
 type Config struct {
-	HttpPort        int
+	HttpPort        int `envconfig:"HTTP_PORT"`
 	HttpDebug       bool
 	TemplatesPath   string
 	AttemptsPath    string
 	RunTestsTimeout int
 	TestPortStart   int
+	TestHost        string `envconfig:"TEST_HOST"`
 	DB              struct {
-		Host     string
-		Port     int
-		Name     string
-		User     string
-		Password string
+		Host     string `envconfig:"DB_HOST"`
+		Port     int    `envconfig:"DB_PORT"`
+		Name     string `envconfig:"DB_NAME"`
+		User     string `envconfig:"DB_USER"`
+		Password string `envconfig:"DB_PASSWORD"`
 		Migrate  bool
 		Log      bool
 	}
@@ -38,9 +40,13 @@ func Load(path string) *Config {
 	}
 	defer file.Close()
 	decoder := json.NewDecoder(file)
-	err2 := decoder.Decode(&config)
-	if err2 != nil {
-		panic("parse config error: " + err2.Error())
+	err = decoder.Decode(&config)
+	if err != nil {
+		panic("parse config error: " + err.Error())
+	}
+	err = envconfig.Process("", &config)
+	if err != nil {
+		panic("get env error: " + err.Error())
 	}
 	return &config
 }

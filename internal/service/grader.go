@@ -63,7 +63,6 @@ func (s *Service) CreateAttempt(req model.AttemptRequest, file *multipart.FileHe
 	if err != nil {
 		return &attempt, fmt.Errorf("err build and run: %w", err)
 	}
-	// TODO: make web-request to container
 	return &attempt, err
 }
 
@@ -117,7 +116,7 @@ func (s *Service) runTests(
 }
 
 func (s *Service) runTestWeb(task model.TaskDB, attempt *model.AttemptDB, port int, start time.Time) error {
-	url := fmt.Sprintf("http://localhost:%d%s", port, task.TestcaseURL)
+	url := fmt.Sprintf("http://%s:%d%s", s.Config.TestHost, port, task.TestcaseURL)
 	httpClient := http.Client{
 		Timeout: time.Duration(s.Config.RunTestsTimeout) * time.Second,
 	}

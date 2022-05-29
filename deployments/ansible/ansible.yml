@@ -1,0 +1,157 @@
+- hosts: all
+  gather_facts: yes
+  remote_user: root
+  become: yes
+  vars:
+    db_port: "5434"
+    db_host: '{{ansible_default_ipv4["address"]}}'
+    db_password: "oizckz6k668mpnk68pg5"
+    docker_user: "nightlord189"
+    docker_password: "Yz8II8yIMur894oo7h"
+
+  tasks:
+    - name: Allow SSH in UFW
+      ufw:
+        rule=allow
+        port=22
+        proto=tcp
+      tags: ufw
+
+    - name: Allow PostgreSQL in UFW
+      ufw:
+        rule=allow
+        port="{{db_port}}"
+        proto=tcp
+      tags: ufw
+
+    - name: Allow web in UFW
+      ufw:
+        rule=allow
+        port=80
+        proto=tcp
+      tags: ufw
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: reject
+      tags: ufw
+
+    - name: Apt install
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+        update_cache: yes
+      tags: docker
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      tags: docker
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+      tags: docker
+
+    - name: Apt install 2
+      ansible.builtin.apt:
+        pkg:
+          - docker-ce
+          - python3-pip
+          - python3-docker
+          - python3-dev
+          - python3-psycopg2
+          - postgresql
+        state: present
+        update_cache: yes
+      tags:
+        - docker
+        - postgres
+
+    - name: Change PostgreSQL network binding
+      lineinfile:
+        path: /etc/postgresql/12/main/postgresql.conf
+        regexp: '# listen_addresses'
+        line: "listen_addresses = '*'"
+      register: psqlState
+      tags: postgres
+
+    - name: Change PostgreSQL port
+      lineinfile:
+        path: /etc/postgresql/12/main/postgresql.conf
+        regexp: 'port'
+        line: "port = {{db_port}}"
+      register: psqlState
+      tags: postgres
+
+    - name: Change PostgreSQL pg hba access
+      lineinfile:
+        path: /etc/postgresql/12/main/pg_hba.conf
+        regexp: 'host  all  all 0.0.0.0/0 md5'
+        line: 'host  all  all 0.0.0.0/0 md5'
+      register: psqlState
+      tags: postgres
+
+    - name: Restart PostgreSQL
+      service:
+        enabled: yes
+        name: postgresql
+        state: restarted
+      when: psqlState.changed
+      tags: postgres
+
+    - name: Set PostgreSQL user
+      postgresql_user:
+        state: present
+        name: postgres
+        password: "{{db_password}}"
+        port: "{{db_port}}"
+      become_user: postgres
+      become: true
+      tags: postgres
+
+    - name: Create db
+      postgresql_db:
+        state: present
+        name: ulp
+        port: "{{db_port}}"
+      become_user: postgres
+      become: true
+      tags: postgres
+
+    - name: Log into private registry and force re-authorization
+      docker_login:
+        username: "{{docker_user}}"
+        password: "{{docker_password}}"
+        reauthorize: no
+      tags: app
+
+    - name: run app
+      community.docker.docker_container:
+        name: ulp
+        image: nightlord189/ulp:latest
+        pull: yes
+        published_ports: 80:8080
+        restart_policy: always
+        restart: yes
+        container_default_behavior: no_defaults
+        state: started
+        env:
+          DB_HOST: "172.17.0.1"
+          DB_PORT: "{{db_port}}"
+          DB_USER: "postgres"
+          DB_PASSWORD: "{{db_password}}"
+          DB_NAME: "ulp"
+          TEST_HOST: "172.17.0.1"
+        volumes:
+          - /attempt:/attempt
+          - /var/run/docker.sock:/var/run/docker.sock
+      tags: app

@@ -1,0 +1,41 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - '**'
+env:
+  env1: val1
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: build docker
+        run: make docker-build
+
+      - name: docker login
+        run: echo ${{secrets.DOCKER_PASSWORD}} | docker login -u ${{secrets.DOCKER_USER}} --password-stdin
+
+      - name: docker push
+        run: make docker-push
+
+      - name: deploy ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: root
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            echo ${{secrets.DOCKER_PASSWORD}} | docker login -u ${{secrets.DOCKER_USER}} --password-stdin
+            docker pull nightlord189/ulp:latest
+            docker run --rm -p 80:8080 -d --name ulp --restart always 
+            -e TEST_HOST='172.17.0.1' -e DB_HOST='172.17.0.1' -e DB_PORT='5434'
+            -v /Users/aburavov/dev/volumes/ulp:/attempt -v /var/run/docker.sock:/var/run/docker.sock 
+            nightlord189/ulp:latest
