@@ -31,7 +31,7 @@ jobs:
           playbook: deployments/ansible/ansible.yml
           directory: deployments/ansible
           key: ${{secrets.SSH_KEY}}
-          requirements: deployments/ansible/requirements.yml
+          #requirements: deployments/ansible/requirements.yml
           options: |
             --inventory .inventory.ini
 
