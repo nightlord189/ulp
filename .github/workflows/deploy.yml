@@ -25,11 +25,15 @@ jobs:
       - name: docker push
         run: make docker-push
 
-      - name: script
-        run: |
-          echo "script"
-          cat ./deployments/ansible/requirements.yml
-        shell: bash
+      - name: Play Ansible Playbook
+        uses: arillso/action.playbook@master
+        with:
+          playbook: deployments/ansible/playbook.yml
+          inventory: deployments/ansible/inventory.ini
+          galaxy_file: deployments/ansible/requirements.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: 'false'
+          ANSIBLE_DEPRECATION_WARNINGS: 'false'
 
       - name: Check the deployed service URL
         uses: jtalk/url-health-check-action@v2
