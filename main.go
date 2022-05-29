@@ -8,6 +8,7 @@ import (
 	"github.com/nightlord189/ulp/internal/db"
 	"github.com/nightlord189/ulp/internal/handler"
 	"github.com/nightlord189/ulp/internal/service"
+	"golang.org/x/crypto/acme/autocert"
 	"net/http"
 	"os"
 )
@@ -33,6 +34,8 @@ func main() {
 	e := echo.New()
 	e.Debug = cfg.HttpDebug
 	e.Renderer = hlr
+	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+
 	e.Static("/static", "web/static")
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -62,7 +65,8 @@ func main() {
 
 	e.GET("/api/template/dockerfile", hlr.GetDockerfileTemplates)
 
-	err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort))
+	//err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort))
+	err = e.StartAutoTLS(":443")
 	if err != nil {
 		panic(fmt.Sprintf("error start server: %v", err))
 	}
