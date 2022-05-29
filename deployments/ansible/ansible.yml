@@ -24,14 +24,21 @@
         proto=tcp
       tags: ufw
 
-    - name: Allow web in UFW
+    - name: Allow 80 in UFW
       ufw:
         rule=allow
         port=80
         proto=tcp
       tags: ufw
 
-    - name: Allow web in UFW
+    - name: Allow 8080 in UFW
+      ufw:
+        rule=allow
+        port=8080
+        proto=tcp
+      tags: ufw
+
+    - name: Allow 443 in UFW
       ufw:
         rule=allow
         port=443
@@ -52,6 +59,7 @@
           - curl
           - gnupg-agent
           - software-properties-common
+          - net-tools
         state: present
         update_cache: yes
       tags: docker
@@ -133,6 +141,26 @@
       become_user: postgres
       become: true
       tags: postgres
+
+    - name: Copy Caddyfile
+      ansible.builtin.copy:
+        src: Caddyfile
+        dest: /Caddyfile
+        owner: root
+        mode: '0644'
+
+    - name: run Caddy
+      community.docker.docker_container:
+        name: caddy
+        image: caddy:latest
+        pull: yes
+        network_mode: host
+        restart_policy: always
+        recreate: yes
+        container_default_behavior: no_defaults
+        state: started
+        volumes:
+          - /Caddyfile:/etc/caddy/Caddyfile
 
     - name: Log into private registry and force re-authorization
       docker_login:
