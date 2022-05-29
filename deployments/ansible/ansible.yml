@@ -147,8 +147,7 @@
         image: nightlord189/ulp:latest
         pull: yes
         ports:
-          - "80:8080"
-          - "443:443"
+          - "8080:8080"
         restart_policy: always
         restart: yes
         container_default_behavior: no_defaults

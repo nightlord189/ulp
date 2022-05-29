@@ -36,7 +36,7 @@ jobs:
             echo ${{secrets.DOCKER_PASSWORD}} | docker login -u ${{secrets.DOCKER_USER}} --password-stdin
             docker pull nightlord189/ulp:latest
             docker container rm -f ulp || true
-            docker run -p 80:8080 -p 443:443 -d --name ulp --restart always \
+            docker run -p 8080:8080 -d --name ulp --restart always \
             -e TEST_HOST='172.17.0.1' -e DB_HOST='172.17.0.1' -e DB_PORT='5434' -e DB_PASSWORD='${{secrets.DB_PASSWORD}}' \
             -e CONTAINER_ARCH='amd64' \
             -v /attempt:/attempt -v /var/run/docker.sock:/var/run/docker.sock nightlord189/ulp:latest
