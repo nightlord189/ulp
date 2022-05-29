@@ -38,8 +38,8 @@ jobs:
             docker container rm -f ulp || true
             docker run -p 80:8080 -p 443:443 -d --name ulp --restart always \
             -e TEST_HOST='172.17.0.1' -e DB_HOST='172.17.0.1' -e DB_PORT='5434' -e DB_PASSWORD='${{secrets.DB_PASSWORD}}' \
-            -e HTTPS='true' -e CONTAINER_ARCH='amd64' \
-            -v /Users/aburavov/dev/volumes/ulp:/attempt -v /var/run/docker.sock:/var/run/docker.sock nightlord189/ulp:latest
+            -e CONTAINER_ARCH='amd64' \
+            -v /attempt:/attempt -v /var/run/docker.sock:/var/run/docker.sock nightlord189/ulp:latest
 
       - name: Check the deployed service URL
         uses: jtalk/url-health-check-action@v2

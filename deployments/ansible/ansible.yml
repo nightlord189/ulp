@@ -160,7 +160,6 @@
           DB_PASSWORD: "{{db_password}}"
           DB_NAME: "ulp"
           TEST_HOST: "172.17.0.1"
-          HTTPS: 'true'
           CONTAINER_ARCH: 'amd64'
         volumes:
           - /attempt:/attempt

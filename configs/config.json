@@ -7,7 +7,6 @@
   "TestPortStart": 10000,
   "TestHost": "localhost",
   "ContainerArchitecture": "arm64",
-  "Https": false,
   "Db": {
     "Host": "localhost",
     "Port": 5432,
