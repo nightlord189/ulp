@@ -25,15 +25,11 @@ jobs:
       - name: docker push
         run: make docker-push
 
-      - name: ansible deploy
-        uses: dawidd6/action-ansible-playbook@v2
+      - name: Perform ansible playbook to deploy
+        uses: actions-ansible@v2
         with:
           playbook: ./deployments/ansible/ansible.yml
-          directory: ./deployments/ansible
-          key: ${{secrets.SSH_KEY}}
-          requirements: ./deployments/ansible/requirements.yml
-          options: |
-            --inventory ./deployments/ansible/inventory.ini
+          inventory: ./deployments/ansible/inventory.ini
 
       - name: Check the deployed service URL
         uses: jtalk/url-health-check-action@v2
