@@ -35,6 +35,7 @@ jobs:
           script: |
             echo ${{secrets.DOCKER_PASSWORD}} | docker login -u ${{secrets.DOCKER_USER}} --password-stdin
             docker pull nightlord189/ulp:latest
-            docker run --rm -p 80:8080 -d --name ulp --restart always \
+            docker container rm -f ulp || true
+            docker run -p 80:8080 -d --name ulp --restart always \
             -e TEST_HOST='172.17.0.1' -e DB_HOST='172.17.0.1' -e DB_PORT='5434' \
             -v /Users/aburavov/dev/volumes/ulp:/attempt -v /var/run/docker.sock:/var/run/docker.sock nightlord189/ulp:latest
