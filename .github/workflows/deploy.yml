@@ -37,20 +37,15 @@ jobs:
           sudo apt install ansible
         shell: bash
 
-      - name: Add SSH key
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: |
-          mkdir -p /home/runner/.ssh
-          ssh-keyscan ulp.com >> /home/runner/.ssh/known_hosts
-          echo "${{ secrets.SSH_KEY }}" > /home/runner/.ssh/github_actions
-          chmod 600 /home/runner/.ssh/github_actions
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
-          ssh-add /home/runner/.ssh/github_actions
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          name: id_rsa # optional
+          if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
 
       - name: deploy
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           make deploy
         shell: bash
