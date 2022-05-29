@@ -294,7 +294,7 @@ func (s *Service) run(ctx context.Context, cli *client.Client, task model.TaskDB
 
 	resp, err := cli.ContainerCreate(ctx, &createConfig, hostConfig, nil, &specs.Platform{
 		OS:           "linux",
-		Architecture: "arm64",
+		Architecture: s.Config.ContainerArchitecture,
 	}, containerName)
 	if err != nil {
 		return fmt.Errorf("error create container: %w", err)

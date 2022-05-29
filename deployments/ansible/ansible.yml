@@ -161,6 +161,7 @@
           DB_NAME: "ulp"
           TEST_HOST: "172.17.0.1"
           HTTPS: 'true'
+          CONTAINER_ARCH: 'amd64'
         volumes:
           - /attempt:/attempt
           - /var/run/docker.sock:/var/run/docker.sock

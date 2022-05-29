@@ -8,15 +8,16 @@ import (
 
 //Config - конфиг
 type Config struct {
-	HttpPort        int `envconfig:"HTTP_PORT"`
-	HttpDebug       bool
-	TemplatesPath   string
-	AttemptsPath    string
-	RunTestsTimeout int
-	TestPortStart   int
-	TestHost        string `envconfig:"TEST_HOST"`
-	Https           bool   `envconfig:"HTTPS"`
-	DB              struct {
+	HttpPort              int `envconfig:"HTTP_PORT"`
+	HttpDebug             bool
+	TemplatesPath         string
+	AttemptsPath          string
+	RunTestsTimeout       int
+	TestPortStart         int
+	TestHost              string `envconfig:"TEST_HOST"`
+	ContainerArchitecture string `envconfig:"CONTAINER_ARCH"`
+	Https                 bool   `envconfig:"HTTPS"`
+	DB                    struct {
 		Host     string `envconfig:"DB_HOST"`
 		Port     int    `envconfig:"DB_PORT"`
 		Name     string `envconfig:"DB_NAME"`
