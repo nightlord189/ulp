@@ -38,5 +38,5 @@ jobs:
             docker container rm -f ulp || true
             docker run -p 80:8080 -d --name ulp --restart always \
             -e TEST_HOST='172.17.0.1' -e DB_HOST='172.17.0.1' -e DB_PORT='5434' -e DB_PASSWORD='${{secrets.DB_PASSWORD}}' \
-            -e HTTPS='true' \
+            -e HTTPS='false' \
             -v /Users/aburavov/dev/volumes/ulp:/attempt -v /var/run/docker.sock:/var/run/docker.sock nightlord189/ulp:latest
