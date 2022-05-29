@@ -28,9 +28,9 @@ jobs:
       - name: Play Ansible Playbook
         uses: arillso/action.playbook@master
         with:
-          playbook: deployments/ansible/playbook.yml
-          inventory: deployments/ansible/inventory.ini
-          galaxy_file: deployments/ansible/requirements.yml
+          playbook: ./deployments/ansible/playbook.yml
+          inventory: ./deployments/ansible/inventory.ini
+          galaxy_file: ./deployments/ansible/requirements.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: 'false'
           ANSIBLE_DEPRECATION_WARNINGS: 'false'
