@@ -43,6 +43,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           name: id_rsa # optional
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
+          known_hosts: unnecessary
 
       - name: deploy
         run: |
