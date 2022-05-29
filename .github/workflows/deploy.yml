@@ -27,15 +27,23 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - uses: actions/checkout@v2
+
+      - name: script
+        run: |
+          echo "script"
+          cat ./deployments/ansible/requirements.yml
+          ls deployments/ansible
+        shell: bash
 
       - name: Play Ansible Playbook
         uses: arillso/action.playbook@master
         with:
-          playbook: ./deployments/ansible/playbook.yml
-          inventory: ./deployments/ansible/inventory.ini
-          galaxy_file: ./deployments/ansible/requirements.yml
+          playbook: deployments/ansible/playbook.yml
+          inventory: deployments/ansible/inventory.ini
+          galaxy_file: deployments/ansible/requirements.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: 'false'
           ANSIBLE_DEPRECATION_WARNINGS: 'false'
