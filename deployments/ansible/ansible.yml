@@ -31,6 +31,13 @@
         proto=tcp
       tags: ufw
 
+    - name: Allow web in UFW
+      ufw:
+        rule=allow
+        port=443
+        proto=tcp
+      tags: ufw
+
     - name: Enable UFW
       ufw:
         state: enabled
@@ -139,7 +146,9 @@
         name: ulp
         image: nightlord189/ulp:latest
         pull: yes
-        published_ports: 80:8080
+        ports:
+          - "80:8080"
+          - "443:443"
         restart_policy: always
         restart: yes
         container_default_behavior: no_defaults
@@ -151,6 +160,7 @@
           DB_PASSWORD: "{{db_password}}"
           DB_NAME: "ulp"
           TEST_HOST: "172.17.0.1"
+          HTTPS: 'true'
         volumes:
           - /attempt:/attempt
           - /var/run/docker.sock:/var/run/docker.sock

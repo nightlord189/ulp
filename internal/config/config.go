@@ -15,6 +15,7 @@ type Config struct {
 	RunTestsTimeout int
 	TestPortStart   int
 	TestHost        string `envconfig:"TEST_HOST"`
+	Https           bool   `envconfig:"HTTPS"`
 	DB              struct {
 		Host     string `envconfig:"DB_HOST"`
 		Port     int    `envconfig:"DB_PORT"`

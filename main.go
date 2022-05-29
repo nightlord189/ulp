@@ -34,7 +34,10 @@ func main() {
 	e := echo.New()
 	e.Debug = cfg.HttpDebug
 	e.Renderer = hlr
-	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+
+	if cfg.Https {
+		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
+	}
 
 	e.Static("/static", "web/static")
 	e.Use(middleware.Logger())
@@ -65,8 +68,11 @@ func main() {
 
 	e.GET("/api/template/dockerfile", hlr.GetDockerfileTemplates)
 
-	//err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort))
-	err = e.StartAutoTLS(":443")
+	if cfg.Https {
+		err = e.StartAutoTLS(":443")
+	} else {
+		err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort))
+	}
 	if err != nil {
 		panic(fmt.Sprintf("error start server: %v", err))
 	}
