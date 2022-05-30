@@ -46,4 +46,4 @@ RUN npm install
 
 COPY . .
 
-CMD [ "node", "server.js" ]') ON CONFLICT DO NOTHING;
+CMD [ "node", "index.js" ]') ON CONFLICT DO NOTHING;
