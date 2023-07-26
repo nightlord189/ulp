@@ -26,13 +26,13 @@ WORKDIR /build
 
 COPY . .
 
-RUN go mod download
+RUN GO111MODULE=off CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main .
 
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main .
+FROM alpine
 
-FROM scratch
+COPY --from=builder /build/main /
 
-COPY --from=builder /build/main /') ON CONFLICT DO NOTHING;
+CMD ["sleep", "infinity"]') ON CONFLICT DO NOTHING;
 
 INSERT INTO public.dockerfile_templates
 ("id", "key", "name", "content")

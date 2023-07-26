@@ -24,7 +24,7 @@ type Config struct {
 		User     string `envconfig:"DB_USER"`
 		Password string `envconfig:"DB_PASSWORD"`
 		Migrate  bool
-		Log      bool
+		Log      bool `envconfig:"DB_LOG"`
 	}
 	Auth struct {
 		Secret  string

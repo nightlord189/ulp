@@ -14,6 +14,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/nightlord189/ulp/internal/model"
 	specs "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/rs/zerolog/log"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -233,7 +234,10 @@ func (s *Service) runTestConsole(ctx context.Context, cli *client.Client, task m
 				attempt.Log += fmt.Sprintf("console output \"%s\" contains expected value\n", contentStr)
 			} else {
 				attempt.State = model.AttemptStateFail
-				attempt.Log += fmt.Sprintf("console output \"%s\" doesn't contain expected value\n", contentStr)
+				attempt.Log += fmt.Sprintf("console output \"%s\" doesn't contain expected value \"%s\"\n", contentStr, task.TestcaseExpected)
+
+				log.Ctx(ctx).Info().Str("expected", task.TestcaseExpected).Str("fact", contentStr).
+					Msg("console output doesn't contain expected value")
 			}
 			break
 		case model.TestCaseTypeEqual:
