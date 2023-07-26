@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	fmt.Println("start")
+	fmt.Println("start #1")
 
 	cfg := config.Load("configs/config.json")
 
@@ -26,6 +26,8 @@ func main() {
 	}
 
 	ctx := context.Background()
+
+	zerolog.Ctx(ctx).Info().Msg("start #2")
 
 	if _, err := os.Stat(cfg.AttemptsPath); os.IsNotExist(err) {
 		if err := os.Mkdir(cfg.AttemptsPath, os.ModePerm); err != nil {
@@ -75,6 +77,8 @@ func main() {
 	e.GET("/api/template/dockerfile", hlr.GetDockerfileTemplates)
 
 	fmt.Println("server arch:", cfg.ContainerArchitecture)
+
+	zerolog.Ctx(ctx).Info().Msg("start #3 (starting web-server)")
 
 	err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort))
 	if err != nil {
