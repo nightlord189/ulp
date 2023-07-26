@@ -5,9 +5,9 @@
   vars:
     db_port: "5434"
     db_host: '{{ansible_default_ipv4["address"]}}'
-    db_password: "oizckz6k668mpnk68pg5"
-    docker_user: "nightlord189"
-    docker_password: "Yz8II8yIMur894oo7h"
+    db_password: "wdchdsctygvdsfc"
+    docker_user: "some_user"
+    docker_password: "ndsbcgdvcg"
 
   tasks:
     - name: Allow SSH in UFW

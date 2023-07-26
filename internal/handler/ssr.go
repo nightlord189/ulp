@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/nightlord189/ulp/internal/model"
+	"github.com/rs/zerolog"
 	"net/http"
 	"strconv"
 	"time"
@@ -158,6 +159,8 @@ func (h *Handler) DeleteTask(c echo.Context) error {
 }
 
 func (h *Handler) PostAttempt(c echo.Context) error {
+	ctx := c.Request().Context()
+
 	var req model.AttemptRequest
 	err := c.Bind(&req)
 	if err != nil {
@@ -187,6 +190,7 @@ func (h *Handler) PostAttempt(c echo.Context) error {
 
 	attempt, err := h.Service.CreateAttempt(req, file, &src)
 	if err != nil {
+		zerolog.Ctx(ctx).Err(err).Msg("create attempt error")
 		return renderMessage(c, "Ошибка проведения теста: "+err.Error(), true)
 	}
 	return c.Redirect(302, fmt.Sprintf("/attempt/%d", attempt.ID))

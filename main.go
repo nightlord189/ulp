@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -8,6 +9,9 @@ import (
 	"github.com/nightlord189/ulp/internal/db"
 	"github.com/nightlord189/ulp/internal/handler"
 	"github.com/nightlord189/ulp/internal/service"
+	"github.com/nightlord189/ulp/pkg/log"
+	"github.com/rs/zerolog"
+	stdLog "log"
 	"net/http"
 	"os"
 )
@@ -17,16 +21,23 @@ func main() {
 
 	cfg := config.Load("configs/config.json")
 
+	if err := log.InitLogger(cfg.LogLevel, "ulp", ""); err != nil {
+		stdLog.Fatalf("error on init logger: %v", err)
+	}
+
+	ctx := context.Background()
+
 	if _, err := os.Stat(cfg.AttemptsPath); os.IsNotExist(err) {
 		if err := os.Mkdir(cfg.AttemptsPath, os.ModePerm); err != nil {
-			panic(fmt.Sprintf("error create attempts directory: %v", err))
+			zerolog.Ctx(ctx).Fatal().Msgf("error create attempts directory: %v", err)
 		}
 	}
 
 	dbInstance, err := db.InitDb(cfg)
 	if err != nil {
-		panic(fmt.Sprintf("error init db: %v", err))
+		zerolog.Ctx(ctx).Fatal().Msgf("error init db: %v", err)
 	}
+
 	srv := service.NewService(cfg, dbInstance)
 	hlr := handler.NewHandler(cfg, dbInstance, srv, cfg.TemplatesPath)
 
@@ -67,6 +78,6 @@ func main() {
 
 	err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort))
 	if err != nil {
-		panic(fmt.Sprintf("error start server: %v", err))
+		zerolog.Ctx(ctx).Fatal().Msgf("error start server: %v", err)
 	}
 }

@@ -6,10 +6,11 @@ import (
 	"os"
 )
 
-//Config - конфиг
+// Config - конфиг
 type Config struct {
 	HttpPort              int `envconfig:"HTTP_PORT"`
 	HttpDebug             bool
+	LogLevel              string
 	TemplatesPath         string
 	AttemptsPath          string
 	RunTestsTimeout       int
@@ -32,7 +33,7 @@ type Config struct {
 	}
 }
 
-//Load - загрузить конфиг по указанному пути
+// Load - загрузить конфиг по указанному пути
 func Load(path string) *Config {
 	config := Config{}
 	file, err := os.Open(path)

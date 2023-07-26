@@ -1,3 +1,5 @@
+CAPROVER_TOKEN='45ef580af1b8d684afd536a5fed8de5516962c89a8c1a2a09ba3abb46d65dd5e'
+
 start:
 	go run main.go
 
@@ -25,3 +27,13 @@ ansible-install:
 
 deploy:
 	ansible-playbook -i deployments/ansible/inventory.ini deployments/ansible/ansible.yml
+
+deploy-ci:
+	rm deploy.tar || true
+	tar -cvf ./deploy.tar  ./*
+	caprover deploy -t ./deploy.tar --host https://captain.app.tinygreencat.dev --appToken ${CAPROVER_TOKEN} --appName ulp
+	rm deploy.tar
+
+deploy:
+	caprover deploy
+

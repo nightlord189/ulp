@@ -1,6 +1,7 @@
 {
   "HttpPort": 8080,
   "HttpDebug": true,
+  "LogLevel": "debug",
   "TemplatesPath": "web/templates/*.html",
   "AttemptsPath": "attempt",
   "RunTestsTimeout": 30,
@@ -12,12 +13,12 @@
     "Port": 5432,
     "Name": "ulp",
     "User": "postgres",
-    "Password": "snami",
+    "Password": "123456",
     "Migrate": true,
     "Log": true
   },
   "Auth": {
-    "Secret": "mWttEjdFThHtrAvRpt4P",
+    "Secret": "dscHjIdsgcd12",
     "Issuer": "ULP",
     "ExpTime": 604800
   }
