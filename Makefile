@@ -28,12 +28,8 @@ ansible-install:
 deploy:
 	ansible-playbook -i deployments/ansible/inventory.ini deployments/ansible/ansible.yml
 
-deploy-ci:
+deploy:
 	rm deploy.tar || true
 	tar -cvf ./deploy.tar  ./*
-	caprover deploy -t ./deploy.tar --host https://captain.app.tinygreencat.dev --appToken ${CAPROVER_TOKEN} --appName ulp
+	caprover deploy -t ./deploy.tar --host https://captain.app.tinygreencat.dev --caproverPassword ${CAPROVER_PASSWORD} --appName ulp
 	rm deploy.tar
-
-deploy:
-	caprover deploy
-
