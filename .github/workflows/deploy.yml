@@ -23,3 +23,6 @@ jobs:
 
       - name: deploy to caprover
         run: make deploy
+        env:
+          CAPROVER_HOST: ${{ secrets.CAPROVER_HOST }}
+          CAPROVER_TOKEN: ${{ secrets.CAPROVER_TOKEN }}
