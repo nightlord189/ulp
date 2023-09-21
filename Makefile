@@ -1,5 +1,3 @@
-CAPROVER_TOKEN='74551340c1a98f57c4b8219f1e1cc623eee20bae2d61263d02977f18a24c5997'
-
 start:
 	go run main.go
 
@@ -31,5 +29,5 @@ deploy:
 deploy:
 	rm deploy.tar || true
 	tar -cvf ./deploy.tar  ./*
-	caprover deploy -t ./deploy.tar --host https://captain.app.tinygreencat.dev --caproverPassword ${CAPROVER_PASSWORD} --appName ulp
+	caprover deploy -t ./deploy.tar --host https://captain.app.tinygreencat.dev --caproverToken ${CAPROVER_TOKEN} --appName ulp
 	rm deploy.tar

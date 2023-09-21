@@ -9,6 +9,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/labstack/echo/v4 v4.7.2
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799
+	github.com/rs/zerolog v1.29.1
 	github.com/stretchr/testify v1.7.0
 	gorm.io/driver/postgres v1.3.6
 	gorm.io/gorm v1.23.5
@@ -45,7 +46,6 @@ require (
 	github.com/opencontainers/runc v1.1.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rs/zerolog v1.29.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
