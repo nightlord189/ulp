@@ -29,5 +29,5 @@ deploy:
 deploy:
 	rm deploy.tar || true
 	tar -cvf ./deploy.tar  ./*
-	caprover deploy -t ./deploy.tar --host ${CAPROVER_HOST} ----appToken ${CAPROVER_TOKEN} --appName ulp
+	caprover deploy -t ./deploy.tar --host ${CAPROVER_HOST} --appToken ${CAPROVER_TOKEN} --appName ulp
 	rm deploy.tar
